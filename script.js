@@ -112,29 +112,34 @@
   const lightboxNext = document.querySelector('.lightbox-next');
 
   let isPriceMode = false;
-  let currentPriceIndex = 0;
+  let currentImageIndex = 0;
+  let activeImageArray = [];
 
   function updateLightboxNav() {
     if (!lightboxPrev || !lightboxNext) return;
-    const show = isPriceMode && priceImages.length > 1;
+    const show = isPriceMode && activeImageArray.length > 1;
     lightboxPrev.style.display = show ? 'flex' : 'none';
     lightboxNext.style.display = show ? 'flex' : 'none';
   }
 
-  function openLightbox(src, alt, options = {}) {
+  function openLightbox(index, mode = 'gallery') {
     if (!lightbox || !lightboxImg) return;
 
-    if (options.mode === 'price' && priceImages.length) {
+    if (mode === 'price') {
       isPriceMode = true;
-      currentPriceIndex = options.index ?? 0;
-      const item = priceImages[currentPriceIndex] || priceImages[0];
-      lightboxImg.src = item.src;
-      lightboxImg.alt = item.alt;
+      activeImageArray = priceImages;
     } else {
       isPriceMode = false;
-      lightboxImg.src = src;
-      lightboxImg.alt = alt || 'Зображення галереї';
+      activeImageArray = galleryImages.map((src, i) => ({
+        src,
+        alt: 'Робота студії ' + (i + 1)
+      }));
     }
+
+    currentImageIndex = index;
+    const item = activeImageArray[currentImageIndex];
+    lightboxImg.src = item.src;
+    lightboxImg.alt = item.alt;
 
     updateLightboxNav();
     lightbox.hidden = false;
@@ -146,17 +151,18 @@
   function closeLightbox() {
     if (!lightbox) return;
     isPriceMode = false;
+    activeImageArray = [];
     updateLightboxNav();
     lightbox.classList.remove('is-open');
     lightbox.hidden = true;
     document.body.style.overflow = '';
   }
 
-  function showPrice(delta) {
-    if (!isPriceMode || !priceImages.length || !lightboxImg) return;
-    const total = priceImages.length;
-    currentPriceIndex = (currentPriceIndex + delta + total) % total;
-    const item = priceImages[currentPriceIndex];
+  function showNextImage(delta) {
+    if (!activeImageArray.length || !lightboxImg) return;
+    const total = activeImageArray.length;
+    currentImageIndex = (currentImageIndex + delta + total) % total;
+    const item = activeImageArray[currentImageIndex];
     lightboxImg.src = item.src;
     lightboxImg.alt = item.alt;
   }
@@ -173,10 +179,7 @@
     }
 
     item.addEventListener('click', () => {
-      const img = item.querySelector('img');
-      if (img && img.src && !img.src.startsWith('data:')) {
-        openLightbox(img.src, img.alt);
-      }
+      openLightbox(i, 'gallery');
     });
   });
 
@@ -184,16 +187,43 @@
   const pricesButton = document.querySelector('.btn-prices');
   if (pricesButton && priceImages.length) {
     pricesButton.addEventListener('click', () => {
-      openLightbox(priceImages[0].src, priceImages[0].alt, {
-        mode: 'price',
-        index: 0
-      });
+      openLightbox(0, 'price');
     });
   }
 
+  // ----- Lightbox Swipe Handling -----
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  function handleSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) {
+      showNextImage(1);
+    } else if (touchEndX > touchStartX + swipeThreshold) {
+      showNextImage(-1);
+    }
+  }
+
+  if (lightbox) {
+    lightbox.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    lightbox.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (activeImageArray.length > 1) handleSwipe();
+    }, { passive: true });
+  }
+
   if (lightboxPrev && lightboxNext) {
-    lightboxPrev.addEventListener('click', () => showPrice(-1));
-    lightboxNext.addEventListener('click', () => showPrice(1));
+    lightboxPrev.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showNextImage(-1);
+    });
+    lightboxNext.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showNextImage(1);
+    });
   }
 
   if (lightboxClose) {
@@ -201,15 +231,15 @@
   }
   if (lightbox) {
     lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) closeLightbox();
+      if (e.target === lightbox || e.target.classList.contains('lightbox-content')) closeLightbox();
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
         closeLightbox();
-      } else if (isPriceMode && e.key === 'ArrowRight') {
-        showPrice(1);
-      } else if (isPriceMode && e.key === 'ArrowLeft') {
-        showPrice(-1);
+      } else if (activeImageArray.length > 1 && e.key === 'ArrowRight') {
+        showNextImage(1);
+      } else if (activeImageArray.length > 1 && e.key === 'ArrowLeft') {
+        showNextImage(-1);
       }
     });
   }
@@ -238,7 +268,7 @@
   if (googleReviewsContainer && Array.isArray(googleReviewsData)) {
     googleReviewsData.forEach((review) => {
       const card = document.createElement('article');
-      card.className = 'review-card';
+      card.className = 'review-card animate-on-scroll';
 
       const ratingEl = document.createElement('div');
       ratingEl.className = 'review-rating';
@@ -248,7 +278,7 @@
       ratingEl.appendChild(stars);
 
       const label = document.createElement('small');
-      label.textContent = review.rating.toFixed(1) + ' / 5';
+      label.textContent = review.rating.toFixed(1);
       ratingEl.appendChild(label);
 
       const textEl = document.createElement('p');
@@ -264,6 +294,7 @@
       card.appendChild(authorEl);
 
       googleReviewsContainer.appendChild(card);
+      observer.observe(card);
     });
   }
 

@@ -30,6 +30,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/png" href="images/favicon.png" />
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
@@ -45,7 +46,7 @@
         <a href="#gallery">Портфоліо</a>
         <a href="#contact">Запис</a>
         <a href="#reviews">Відгуки</a>
-        <a href="#location">Контакти</a>
+        <a href="#location">Розташування</a>
       </nav>
       <div class="header-actions">
         <a href="tel:+380671888812" class="header-phone">+38 067 188 88 12</a>
@@ -547,7 +548,7 @@
                   </a>
                 </div>
                 <ul class="contact-side-list">
-                  <li>Підтвердження запису — дзвінок або Telegram</li>
+                  <li>Підтвердження запису — дзвінок або месенджери</li>
                   <li>Уточнення послуги та підбір зручного часу</li>
                   <li>Поради перед процедурою, якщо потрібно</li>
                 </ul>
@@ -608,11 +609,23 @@
         <div class="container">
           <h2 class="section-title animate-on-scroll">Як нас знайти</h2>
           <div class="location-content animate-on-scroll">
-            <address class="location-address">
-              вул. Добровольського, 93<br />
-              м. Горішні Плавні<br />
-              Полтавська область, 39800
-            </address>
+            <div class="location-info">
+              <div class="location-info-block">
+                <span class="location-label">Адреса</span>
+                <address class="location-address">
+                  вул. Добровольського, 93<br />
+                  м. Горішні Плавні<br />
+                  Полтавська область, 39800
+                </address>
+              </div>
+              <div class="location-info-block">
+                <span class="location-label">Графік роботи</span>
+                <div class="location-schedule">
+                  Понеділок – П'ятниця: 08:00 – 20:00<br />
+                  Субота – Неділя: 08:00 – 18:00
+                </div>
+              </div>
+            </div>
             <div class="location-map-wrap">
               <iframe
                 class="map-iframe"
@@ -655,7 +668,7 @@
             <a href="#gallery">Галерея</a>
             <a href="#contact">Запис</a>
             <a href="#reviews">Відгуки</a>
-            <a href="#location">Контакти</a>
+            <a href="#location">Розташування</a>
           </nav>
           <div class="footer-social" aria-label="Соцмережі">
             <a
@@ -792,13 +805,39 @@
           type="button"
           class="lightbox-nav lightbox-prev"
           aria-label="Попередній"
-        ></button>
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 18l-6-6 6-6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
         <img src="" alt="" id="lightbox-img" />
         <button
           type="button"
           class="lightbox-nav lightbox-next"
           aria-label="Наступний"
-        ></button>
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 18l6-6-6-6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -818,7 +857,20 @@
           "postalCode": "39800",
           "addressCountry": "UA"
         },
-        "openingHoursSpecification": [],
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "08:00",
+            "closes": "20:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Saturday", "Sunday"],
+            "opens": "08:00",
+            "closes": "18:00"
+          }
+        ],
         "priceRange": "$$"
       }
     </script>
