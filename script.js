@@ -28,8 +28,8 @@
   // ----- Scroll-triggered animations -----
   const observerOptions = {
     root: null,
-    rootMargin: '0px 0px -80px 0px',
-    threshold: 0.1
+    rootMargin: '0px 0px -50px 0px', // Змінено для швидшого спрацювання на iOS
+    threshold: 0.05
   };
 
   const observer = new IntersectionObserver((entries) => {
@@ -100,6 +100,231 @@
         burger.setAttribute('aria-expanded', 'false');
         document.body.classList.remove('menu-open');
       });
+    });
+  }
+
+  // ----- Services Price Data -----
+  const servicesData = {
+    hair: {
+      title: 'Перукар/Колорист ♕',
+      masters: [
+        { name: 'Лена', role: 'Майстер', photo: 'images/founder.jpg' },   
+      ],
+      prices: [
+        { name: 'Стрижка', isHeader: true },
+        { name: 'Густе/довге волосся', master: '900 ₴' },
+        { name: 'Середня довжина', master: '800 ₴' },
+        { name: 'Догляд', isHeader: true },
+        { name: 'Bright + Olaplex', master: '2000-2300 ₴' },
+        { name: 'Реконструкція', master: '2300 ₴' },
+        { name: 'Реконструкція (Густе/довге)', master: '2700 ₴' }
+      ]
+    },
+    colorist: {
+      title: 'Колорист',
+      masters: [
+        { name: 'Альона', role: 'Майстер', photo: 'images/founder.jpg' },
+        { name: 'Віта', role: 'Топ-майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Фарбування в один тон', master: '1200', top: '1500' },
+        { name: 'Складне фарбування (Airtouch/Balayage)', master: '2500', top: '3500' },
+        { name: 'Тонування волосся', master: '800', top: '1000' },
+        { name: 'Освітлення коренів', master: '1000', top: '1300' }
+      ]
+    },
+    permanent: {
+      title: 'Перманентний макіяж',
+      masters: [
+        { name: 'Юлія', role: 'Топ-майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Пудрові брови', top: '2500' },
+        { name: 'Губи (акварельна техніка)', top: '2500' },
+        { name: 'Міжвійка', top: '1800' },
+        { name: 'Корекція (через 1-2 місяці)', top: '1200' }
+      ]
+    },
+    remover: {
+      title: 'Ремувер',
+      masters: [
+        { name: 'Юлія', role: 'Топ-майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Видалення перманенту (одна процедура)', top: '1000' },
+        { name: 'Видалення тату (залежно від розміру)', top: 'від 800' }
+      ]
+    },
+    nails: {
+      title: 'Нігтьовий сервіс',
+      masters: [
+        { name: 'Олена', role: 'Майстер', photo: 'images/founder.jpg' },
+        { name: 'Ірина', role: 'Топ-майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Манікюр (комбі/апаратний)', master: '300', top: '400' },
+        { name: 'Покриття гель-лаком', master: '400', top: '500' },
+        { name: 'Нарощування нігтів', master: '800', top: '1000' },
+        { name: 'Педикюр', master: '500', top: '700' }
+      ]
+    },
+    brows: {
+      title: 'Бровіст',
+      masters: [
+        { name: 'Анна', role: 'Майстер', photo: 'images/founder.jpg' },
+        { name: 'Катерина', role: 'Топ-майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Корекція брів', master: '200', top: '300' },
+        { name: 'Фарбування брів (фарба/хна)', master: '250', top: '350' },
+        { name: 'Ламінування брів', master: '600', top: '800' },
+        { name: 'Комплекс (корекція + фарбування)', master: '400', top: '600' }
+      ]
+    },
+    lashes: {
+      title: 'Ламімейкер',
+      masters: [
+        { name: 'Катерина', role: 'Топ-майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Ламінування вій', top: '800' },
+        { name: 'Ламінування + ботокс вій', top: '1000' },
+        { name: 'Фарбування вій', top: '200' }
+      ]
+    },
+    massage: {
+      title: 'Масажист',
+      masters: [
+        { name: 'Марія', role: 'Майстер', photo: 'images/founder.jpg' }
+      ],
+      prices: [
+        { name: 'Загальний масаж тіла (60 хв)', master: '800' },
+        { name: 'Масаж спини (30 хв)', master: '450' },
+        { name: 'Антицелюлітний масаж', master: '700' },
+        { name: 'Лімфодренажний масаж', master: '750' }
+      ]
+    }
+  };
+
+  // ----- Price Modal Logic -----
+  const priceModal = document.getElementById('price-modal');
+  const modalTitle = document.getElementById('modal-category-title');
+  const modalBody = document.getElementById('modal-price-body');
+  const priceModalClose = document.querySelector('.price-modal-close');
+  const modalBookingBtn = document.querySelector('.price-modal-btn');
+  const modalTableHead = priceModal?.querySelector('thead tr');
+
+  function openPriceModal(serviceKey) {
+    const data = servicesData[serviceKey];
+    if (!data || !priceModal || !modalBody || !modalTableHead) return;
+
+    modalTitle.textContent = data.title;
+    modalBody.innerHTML = '';
+
+    // Determine which price columns to show based on the masters array
+    const showMasterCol = data.masters.some(m => m.role === 'Майстер');
+    const showTopCol = data.masters.some(m => m.role === 'Топ-майстер');
+
+    // Build the header dynamically
+    let headHtml = `<th class="price-header-name">Послуги</th>`;
+    
+    if (showMasterCol) {
+      const master = data.masters.find(m => m.role === 'Майстер');
+      headHtml += `
+        <th class="price-header-val badge-master">
+          <div class="master-badge-item">
+            <div class="master-photo-circle">
+              <img src="${master.photo || 'images/founder.jpg'}" alt="${master.name}" class="master-photo">
+            </div>
+            <span class="price-badge">${master.name}</span>
+          </div>
+        </th>`;
+    }
+
+    if (showTopCol) {
+      const topMaster = data.masters.find(m => m.role === 'Топ-майстер');
+      headHtml += `
+        <th class="price-header-val badge-top-master">
+          <div class="master-badge-item">
+            <div class="master-photo-circle">
+              <img src="${topMaster.photo || 'images/founder.jpg'}" alt="${topMaster.name}" class="master-photo">
+            </div>
+            <span class="price-badge">${topMaster.name}</span>
+          </div>
+        </th>`;
+    }
+
+    modalTableHead.innerHTML = headHtml;
+
+    // Toggle single column class for styling
+    if (!showMasterCol || !showTopCol) {
+      priceModal.classList.add('single-column');
+    } else {
+      priceModal.classList.remove('single-column');
+    }
+
+    // Build the rows
+    data.prices.forEach(item => {
+      const row = document.createElement('tr');
+      
+      if (item.isHeader) {
+        row.className = 'price-section-row';
+        const cols = 1 + (showMasterCol ? 1 : 0) + (showTopCol ? 1 : 0);
+        row.innerHTML = `<td colspan="${cols}" class="price-section-title">${item.name}</td>`;
+      } else {
+        row.className = 'price-row';
+        let html = `<td class="price-name">${item.name}</td>`;
+        
+        if (showMasterCol) {
+          html += `<td class="price-val">${item.master || '-'}</td>`;
+        }
+        
+        if (showTopCol) {
+          html += `<td class="price-val">${item.top || '-'}</td>`;
+        }
+        
+        row.innerHTML = html;
+      }
+      
+      modalBody.appendChild(row);
+    });
+
+    priceModal.hidden = false;
+    priceModal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePriceModal() {
+    if (!priceModal) return;
+    priceModal.classList.remove('is-open');
+    setTimeout(() => {
+      priceModal.hidden = true;
+    }, 400);
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const serviceKey = card.getAttribute('data-service');
+      if (serviceKey) openPriceModal(serviceKey);
+    });
+  });
+
+  if (priceModalClose) {
+    priceModalClose.addEventListener('click', closePriceModal);
+  }
+
+  if (modalBookingBtn) {
+    modalBookingBtn.addEventListener('click', (e) => {
+      // Плавний перехід до секції контакту вже обробляється іншим скриптом,
+      // тут ми просто закриваємо модальне вікно.
+      closePriceModal();
+    });
+  }
+
+  if (priceModal) {
+    priceModal.addEventListener('click', (e) => {
+      if (e.target.classList.contains('price-modal-overlay')) closePriceModal();
     });
   }
 

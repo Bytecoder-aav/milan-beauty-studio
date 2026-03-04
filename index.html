@@ -191,64 +191,78 @@
             Об'єднали улюблені б'юті-послуги в одному затишному місці
           </p>
           <div class="services-grid">
-            <article class="service-card animate-on-scroll" data-delay="0">
-              <div class="card-icon" aria-hidden="true">✿</div>
-              <h3>Перукар</h3>
-              <p>Стрижки, фарбування, укладки</p>
+            <article
+              class="service-card animate-on-scroll"
+              data-service="hair"
+              data-delay="0"
+            >
+              <div class="card-icon" aria-hidden="true">♕</div>
+              <h3>Перукар / Колорист <b style="color: #e2c98a">ᵗᵒᵖ</b></h3>
+              <p>Стрижки, фарбування, догляд</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="1">
-              <div class="card-icon" aria-hidden="true">◐</div>
+            <article
+              class="service-card animate-on-scroll"
+              data-service="colorist"
+              data-delay="1"
+            >
+              <div class="card-icon" aria-hidden="true">✿</div>
               <h3>Колорист</h3>
               <p>Професійне фарбування волосся</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="2">
+            <article
+              class="service-card animate-on-scroll"
+              data-service="permanent"
+              data-delay="2"
+            >
               <div class="card-icon" aria-hidden="true">◇</div>
               <h3>Перманент / Волоскова техніка</h3>
               <p>Довготривалий макіяж брів та губ</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="3">
+            <article
+              class="service-card animate-on-scroll"
+              data-service="remover"
+              data-delay="3"
+            >
               <div class="card-icon" aria-hidden="true">○</div>
               <h3>Ремувер</h3>
               <p>Корекція та зняття перманенту</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="4">
+            <article
+              class="service-card animate-on-scroll"
+              data-service="nails"
+              data-delay="4"
+            >
               <div class="card-icon" aria-hidden="true">◆</div>
               <h3>Нігтьовий сервіс</h3>
               <p>Манікюр та педикюр</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="5">
+            <article
+              class="service-card animate-on-scroll"
+              data-service="brows"
+              data-delay="5"
+            >
               <div class="card-icon" aria-hidden="true">▸</div>
               <h3>Бровіст</h3>
               <p>Корекція, фарбування, ламінування брів</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="6">
+            <article
+              class="service-card animate-on-scroll"
+              data-service="lashes"
+              data-delay="6"
+            >
               <div class="card-icon" aria-hidden="true">◈</div>
               <h3>Ламімейкер</h3>
               <p>Ламінування та догляд за віями</p>
             </article>
-            <article class="service-card animate-on-scroll" data-delay="7">
+            <article
+              class="service-card animate-on-scroll"
+              data-service="massage"
+              data-delay="7"
+            >
               <div class="card-icon" aria-hidden="true">◎</div>
               <h3>Масажист</h3>
               <p>Розслабляючі та лікувальні масажі</p>
             </article>
-          </div>
-          <div class="services-prices">
-            <button
-              type="button"
-              class="btn btn-ghost btn-prices animate-on-scroll"
-            >
-              <span>Переглянути прайс</span>
-              <span class="btn-arrow" aria-hidden="true">→</span>
-            </button>
-            <p class="prices-note">
-              <i
-                >Остаточна вартість залежить від довжини, густоти волосся
-                <br />та обсягу роботи.
-                <b style="color: var(--gold)"
-                  >Уточніть ціну під час запису.</b
-                ></i
-              >
-            </p>
           </div>
         </div>
       </section>
@@ -841,6 +855,71 @@
       </div>
     </div>
 
+    <div
+      class="price-modal"
+      id="price-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Прайс-лист послуг"
+      hidden
+    >
+      <div class="price-modal-overlay"></div>
+      <div class="price-modal-container animate-on-scroll">
+        <button type="button" class="price-modal-close" aria-label="Закрити">
+          ×
+        </button>
+        <div class="price-modal-content">
+          <header class="price-modal-header">
+            <h2 id="modal-category-title" class="price-modal-title">Послуги</h2>
+          </header>
+          <div class="price-table-wrap">
+            <table class="price-table">
+              <thead>
+                <tr class="price-header-row">
+                  <th class="price-header-name">Послуги</th>
+                  <th class="price-header-val badge-master">
+                    <div class="master-badge-item">
+                      <div class="master-photo-circle">
+                        <img
+                          src="images/founder.jpg"
+                          alt="Майстер"
+                          class="master-photo"
+                          id="photo-master"
+                        />
+                      </div>
+                      <span class="price-badge">Майстер</span>
+                    </div>
+                  </th>
+                  <th class="price-header-val badge-top-master">
+                    <div class="master-badge-item">
+                      <div class="master-photo-circle">
+                        <img
+                          src="images/founder.jpg"
+                          alt="Топ-Майстер"
+                          class="master-photo"
+                          id="photo-top-master"
+                        />
+                      </div>
+                      <span class="price-badge">Топ-майстер</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="modal-price-body">
+                <!-- Контент буде додано через JS -->
+              </tbody>
+            </table>
+          </div>
+          <footer class="price-modal-footer">
+            <p>* Остаточна вартість залежить від обсягу роботи.</p>
+            <a href="#contact" class="btn btn-primary price-modal-btn"
+              >Записатися</a
+            >
+          </footer>
+        </div>
+      </div>
+    </div>
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -860,7 +939,13 @@
         "openingHoursSpecification": [
           {
             "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday"
+            ],
             "opens": "08:00",
             "closes": "20:00"
           },
