@@ -595,47 +595,90 @@
   const API_URL = "https://milanstudiobot-production.up.railway.app/api";
   const API_KEY = "lena7777";
 
-  // Функція відправки заявки
+  const form = document.getElementById('contact-form');
+  const messageEl = document.getElementById('form-message');
+
+  function showMessage(text, type) {
+    if (!messageEl) return;
+    messageEl.textContent = text;
+    messageEl.className = 'form-message visible ' + type;
+    messageEl.setAttribute('aria-live', 'polite');
+    setTimeout(() => {
+      messageEl.classList.remove('visible');
+    }, 6000);
+  }
+
   async function sendBooking(formData) {
     const response = await fetch(`${API_URL}/booking`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "x-api-key": API_KEY
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
       },
       body: JSON.stringify({
         name:    formData.name,
         phone:   formData.phone,
         service: formData.service,
-        date:    formData.date,    // формат: YYYY-MM-DD
-        time:    formData.time,    // формат: HH:MM
-        comment: formData.comment, // необов'язково
+        date:    formData.date || '2026-01-01',
+        time:    formData.time || '00:00',
+        comment: formData.comment || '',
       })
     });
-
-    const data = await response.json();
-    return data; // { success: true, booking_id: 42, message: "..." }
+    return await response.json();
   }
 
-  // Виклик у submit-обробнику форми:
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const result = await sendBooking({
-      name:    document.getElementById("name").value,
-      phone:   document.getElementById("phone").value,
-      service: document.getElementById("service").value,
-      date: document.getElementById("date")?.value || "2026-01-01",
-      time: document.getElementById("time")?.value || "00:00",
-      comment: document.getElementById("comment").value,
-    });
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    if (result.success) {
-      showMessage("Дякуємо! " + result.message, "success");
-      form.reset();
-    } else {
-      showMessage(result.error, "error");
-    }
-  });
+      // Визначаємо спосіб зв'язку (radio або select з name="contact-method")
+      const contactMethodEl = form.querySelector('[name="contact-method"]:checked')
+        || form.querySelector('[name="contact-method"]');
+      const contactMethod = contactMethodEl ? contactMethodEl.value : 'phone';
+
+      const contactText = contactMethod === 'telegram'
+        ? 'Ми напишемо вам у Telegram найближчим часом.'
+        : 'Ми зателефонуємо вам у найближчий робочий час.';
+
+      // Блокуємо кнопку щоб не відправити двічі
+      const submitBtn = form.querySelector('[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Відправляємо...';
+      }
+
+      try {
+        const result = await sendBooking({
+          name:    (form.querySelector('#name') || form.querySelector('[name="name"]'))?.value || '',
+          phone:   (form.querySelector('#phone') || form.querySelector('[name="phone"]'))?.value || '',
+          service: (form.querySelector('#service') || form.querySelector('[name="service"]'))?.value || '',
+          date:    form.querySelector('#date')?.value || '',
+          time:    form.querySelector('#time')?.value || '',
+          comment: (form.querySelector('#comment') || form.querySelector('[name="comment"]'))?.value || '',
+        });
+
+        if (result.success) {
+          showMessage('✅ Дякуємо! ' + contactText, 'success');
+          form.reset();
+          // Скидаємо кастомний select якщо є
+          const valueDisplay = document.querySelector('.select-value');
+          if (valueDisplay) {
+            valueDisplay.textContent = valueDisplay.getAttribute('data-placeholder') || 'Оберіть послугу';
+            valueDisplay.classList.add('is-placeholder');
+          }
+        } else {
+          showMessage('❌ ' + (result.error || 'Помилка. Спробуйте ще раз.'), 'error');
+        }
+      } catch (err) {
+        showMessage('❌ Не вдалось відправити. Перевірте інтернет та спробуйте ще раз.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Записатися';
+        }
+      }
+    });
+  }
 
   // ----- Smooth scroll for anchor links -----
   document.querySelectorAll('a[href^="#"], .logo, .footer-logo').forEach((anchor) => {
