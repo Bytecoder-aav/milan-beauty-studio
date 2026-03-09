@@ -71,7 +71,7 @@ function renderServices(categories) {
   }
 
   grid.innerHTML = categories.map((cat, i) => `
-    <article class="service-card animate-on-scroll" data-service="${cat.slug}" data-delay="${i}">
+    <article class="service-card animate-on-scroll is-visible" data-service="${cat.slug}" data-delay="${i}">
       <div class="card-icon" aria-hidden="true">
         ${CAT_ICONS[cat.slug] || CAT_ICONS.massage}
       </div>
@@ -80,12 +80,21 @@ function renderServices(categories) {
     </article>
   `).join('');
 
-  // Перепідключаємо scroll observer
-  if (window._scrollObserver) {
-    grid.querySelectorAll('.animate-on-scroll').forEach(el => window._scrollObserver.observe(el));
-  }
+  // Перепідключаємо scroll observer — з невеликою затримкою щоб script.js встиг
+  setTimeout(() => {
+    if (window._scrollObserver) {
+      grid.querySelectorAll('.animate-on-scroll').forEach(el => window._scrollObserver.observe(el));
+    } else {
+      // Якщо observer ще не готовий — примусово показуємо всі картки
+      grid.querySelectorAll('.animate-on-scroll').forEach(el => {
+        el.classList.add('is-visible');
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+    }
+  }, 100);
 
-  // Клік → price modal (script.js вже завантажений)
+  // Клік → price modal
   rebindServiceCards();
 }
 
@@ -217,3 +226,17 @@ async function initSupabase() {
 
 // Запускаємо після завантаження сторінки
 document.addEventListener('DOMContentLoaded', initSupabase);
+
+// ── Аварійний показ карток якщо CSS анімація їх приховала ────
+// Якщо через 2 секунди картки є в DOM але невидимі — показуємо примусово
+setTimeout(() => {
+  document.querySelectorAll('.service-card').forEach(el => {
+    const style = window.getComputedStyle(el);
+    if (style.opacity === '0' || style.visibility === 'hidden') {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      el.style.visibility = 'visible';
+      el.classList.add('is-visible');
+    }
+  });
+}, 2000);
