@@ -1,880 +1,1856 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan Studio — Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="favicon.png" />
-<style>
-:root{
-  --bg:#080807;--bg2:#0f0e0c;--bg3:#161410;--bg4:#1c1a16;
-  --glass:rgba(255,255,255,0.03);--glass2:rgba(255,255,255,0.06);
-  --gold:#c9a962;--gold2:#e2c98a;--gold3:#a8862e;
-  --goldbg:rgba(201,169,98,0.1);--goldbrd:rgba(201,169,98,0.18);--goldbrd2:rgba(201,169,98,0.4);
-  --text:#ede9e3;--text2:#b8b0a4;--text3:#756d62;
-  --danger:#e05555;--dangerbg:rgba(224,85,85,0.12);--dangerbrd:rgba(224,85,85,0.3);
-  --ok:#4caf7d;--okbg:rgba(76,175,125,0.12);--okbrd:rgba(76,175,125,0.3);
-  --r:12px;--r2:8px;--sw:260px;
-  --fd:"Cormorant Garamond",Georgia,serif;
-  --fb:"Manrope",system-ui,sans-serif;
-  --shadow:0 8px 32px rgba(0,0,0,0.5);
-  --shadow2:0 24px 64px rgba(0,0,0,0.6);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:var(--fb);font-size:14px;color:var(--text);background:var(--bg);min-height:100vh;overflow-x:hidden}
-
-/* ── Noise texture ── */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
-
-/* ── Layout ── */
-.layout{display:flex;min-height:100vh;position:relative;z-index:1}
-
-/* ── Sidebar ── */
-.sb{
-  width:var(--sw);background:var(--bg2);
-  border-right:1px solid var(--goldbrd);
-  display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;bottom:0;z-index:100;
-  overflow-y:auto;transition:transform .3s cubic-bezier(.4,0,.2,1);
-}
-.sb-top{padding:1.75rem 1.5rem 1.25rem;border-bottom:1px solid var(--goldbrd)}
-.sb-brand{display:flex;flex-direction:column;gap:2px}
-.sb-milan{font-family:var(--fd);font-size:1.6rem;font-weight:600;color:var(--gold);letter-spacing:.05em;line-height:1}
-.sb-studio{font-size:.58rem;letter-spacing:.35em;color:var(--text3);text-transform:uppercase}
-.sb-nav{flex:1;padding:.75rem 0;display:flex;flex-direction:column;gap:2px}
-.sb-sec{padding:.75rem 1.5rem .3rem;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text3)}
-.sb-btn{
-  display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem;
-  color:var(--text2);background:none;border:none;width:100%;text-align:left;
-  cursor:pointer;font-family:var(--fb);font-size:.875rem;font-weight:400;
-  border-left:2px solid transparent;transition:all .18s ease;
-  border-radius:0;position:relative;
-}
-.sb-btn::after{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:0;background:var(--gold);transition:height .2s ease;border-radius:1px}
-.sb-btn:hover{color:var(--gold2);background:var(--goldbg)}
-.sb-btn.active{color:var(--gold);background:var(--goldbg)}
-.sb-btn.active::after{height:60%}
-.sb-btn svg{flex-shrink:0;opacity:.6;transition:opacity .18s}
-.sb-btn:hover svg,.sb-btn.active svg{opacity:1}
-.sb-foot{padding:1rem 1.5rem;border-top:1px solid var(--goldbrd)}
-
-/* ── Main ── */
-.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{
-  height:60px;background:rgba(15,14,12,0.85);backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--goldbrd);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 2rem;position:sticky;top:0;z-index:50;
-}
-.topbar-left{display:flex;align-items:center;gap:1rem}
-.tb-title{font-family:var(--fd);font-size:1.15rem;color:var(--gold2);font-weight:500}
-.tb-user{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.4rem}
-.tb-dot{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.content{flex:1;padding:2rem;max-width:1100px}
-
-/* ── Panels ── */
-.panel{display:none;animation:fadeIn .25s ease}
-.panel.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
-.ph-title{font-family:var(--fd);font-size:1.75rem;color:var(--gold2);font-weight:500}
-
-/* ── Card ── */
-.card{
-  background:var(--glass);
-  border:1px solid var(--goldbrd);
-  border-radius:var(--r);
-  overflow:hidden;
-  backdrop-filter:blur(4px);
-}
-.card-header{padding:.75rem 1.25rem;background:rgba(201,169,98,0.04);border-bottom:1px solid var(--goldbrd);display:flex;align-items:center;gap:.5rem}
-.card-header-title{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3)}
-
-/* ── Table ── */
-.tbl{width:100%;border-collapse:collapse}
-.tbl th{
-  padding:.65rem 1rem;text-align:left;
-  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--text3);background:rgba(0,0,0,0.2);
-  border-bottom:1px solid var(--goldbrd);font-weight:500;
-}
-.tbl td{padding:.8rem 1rem;border-bottom:1px solid rgba(201,169,98,0.05);vertical-align:middle;font-size:.875rem;transition:background .15s}
-.tbl tr:last-child td{border-bottom:none}
-.tbl tbody tr:hover td{background:rgba(201,169,98,0.04)}
-.tbl-empty{text-align:center;padding:3.5rem 1rem;color:var(--text3)}
-.tbl-loading{text-align:center;padding:3rem 1rem}
-
-/* ── Price grid table ── */
-.price-grid{width:100%;border-collapse:collapse}
-.price-grid th{
-  padding:.65rem .9rem;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text3);background:rgba(0,0,0,0.2);border-bottom:1px solid var(--goldbrd);
-  text-align:center;font-weight:500;
-}
-.price-grid th:first-child{text-align:left}
-.price-grid td{padding:.6rem .9rem;border-bottom:1px solid rgba(201,169,98,0.05);vertical-align:middle;font-size:.875rem}
-.price-grid tr:last-child td{border-bottom:none}
-.price-grid tbody tr:hover td{background:rgba(201,169,98,0.04)}
-.price-cell{
-  text-align:center;min-width:120px;
-}
-.price-val{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:.3rem .6rem;background:var(--goldbg);
-  border:1px solid var(--goldbrd);border-radius:6px;
-  color:var(--gold2);font-size:.8rem;font-weight:500;cursor:pointer;
-  transition:all .18s;min-width:80px;
-}
-.price-val:hover{background:rgba(201,169,98,0.18);border-color:var(--goldbrd2)}
-.price-empty{color:var(--text3);font-size:.8rem;text-align:center;cursor:pointer;opacity:.5;transition:opacity .15s}
-.price-empty:hover{opacity:1}
-.master-head{display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:.25rem 0}
-.master-ava{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--goldbrd)}
-.master-ava-ph{width:32px;height:32px;border-radius:50%;background:var(--goldbg);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.8rem;font-weight:700;border:1px solid var(--goldbrd);flex-shrink:0}
-
-/* ── Category tabs ── */
-.cat-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
-.cat-tab{
-  padding:.4rem 1rem;border:1px solid var(--goldbrd);border-radius:99px;
-  font-size:.8rem;color:var(--text2);cursor:pointer;background:none;
-  font-family:var(--fb);transition:all .18s;
-}
-.cat-tab:hover{color:var(--gold2);border-color:var(--goldbrd2)}
-.cat-tab.active{background:var(--goldbg);color:var(--gold);border-color:var(--gold)}
-
-/* ── Badges ── */
-.badge{display:inline-flex;align-items:center;padding:.2rem .55rem;border-radius:99px;font-size:.7rem;font-weight:600;letter-spacing:.04em}
-.badge-top{background:rgba(201,169,98,0.15);color:var(--gold2);border:1px solid rgba(201,169,98,0.3)}
-.badge-master{background:rgba(178,178,178,0.1);color:#ccc;border:1px solid rgba(178,178,178,0.2)}
-.pos-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--goldbg);border-radius:50%;font-size:.7rem;color:var(--gold);font-weight:700;border:1px solid var(--goldbrd)}
-
-/* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.1rem;border-radius:var(--r2);font-family:var(--fb);font-size:.825rem;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .18s;text-decoration:none;white-space:nowrap;line-height:1.4}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold3) 100%);color:#1a1511;border-color:transparent}
-.btn-gold:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 16px rgba(201,169,98,0.3)}
-.btn-ghost{background:var(--glass2);color:var(--text2);border-color:var(--goldbrd)}
-.btn-ghost:hover:not(:disabled){color:var(--gold2);border-color:var(--goldbrd2);background:var(--goldbg)}
-.btn-danger{background:var(--dangerbg);color:var(--danger);border-color:var(--dangerbrd)}
-.btn-danger:hover:not(:disabled){background:rgba(224,85,85,0.2)}
-.icon-btn{padding:.4rem;background:var(--glass);border:1px solid var(--goldbrd);color:var(--text2);border-radius:var(--r2);cursor:pointer;transition:all .18s;line-height:0;display:inline-flex}
-.icon-btn:hover{color:var(--gold);border-color:var(--goldbrd2);background:var(--goldbg)}
-.icon-btn.del:hover{color:var(--danger);border-color:var(--dangerbrd);background:var(--dangerbg)}
-.acts{display:flex;gap:.3rem;align-items:center}
-
-/* ── Forms ── */
-.fg{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
-.fg label{font-size:.75rem;color:var(--text2);font-weight:500;letter-spacing:.03em}
-.fg input,.fg textarea,.fg select{
-  padding:.6rem .85rem;background:rgba(0,0,0,0.3);
-  border:1px solid var(--goldbrd);border-radius:var(--r2);
-  color:var(--text);font-family:var(--fb);font-size:.875rem;
-  transition:border-color .18s,box-shadow .18s;width:100%;
-}
-.fg input:focus,.fg textarea:focus,.fg select:focus{
-  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,169,98,0.08)
-}
-.fg select option{background:var(--bg3)}
-.fg small{font-size:.7rem;color:var(--text3)}
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-
-/* ── Modal ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s;backdrop-filter:blur(4px)}
-.overlay.open{opacity:1;visibility:visible}
-.modal{
-  background:var(--bg3);border:1px solid var(--goldbrd);border-radius:16px;
-  padding:2rem;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;
-  transform:translateY(16px) scale(.98);transition:transform .22s cubic-bezier(.4,0,.2,1);
-  box-shadow:var(--shadow2);
-}
-.overlay.open .modal{transform:translateY(0) scale(1)}
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--goldbrd)}
-.modal-title{font-family:var(--fd);font-size:1.3rem;color:var(--gold2);font-weight:500}
-.modal-foot{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--goldbrd)}
-
-/* ── Price edit modal ── */
-.price-edit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;margin-top:.75rem}
-.price-master-block{background:rgba(0,0,0,0.2);border:1px solid var(--goldbrd);border-radius:var(--r2);padding:.75rem}
-.price-master-name{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text2);margin-bottom:.5rem;font-weight:500}
-
-/* ── Toast ── */
-#toasts{position:fixed;bottom:1.75rem;right:1.75rem;display:flex;flex-direction:column;gap:.5rem;z-index:9999;pointer-events:none}
-.toast{
-  padding:.75rem 1.1rem;border-radius:var(--r2);font-size:.825rem;
-  min-width:220px;max-width:340px;pointer-events:auto;
-  animation:toastIn .3s cubic-bezier(.4,0,.2,1);
-  box-shadow:var(--shadow);display:flex;align-items:center;gap:.5rem;
-}
-.toast.ok{background:var(--okbg);color:#7dd4a8;border:1px solid var(--okbrd)}
-.toast.err{background:var(--dangerbg);color:#e88;border:1px solid var(--dangerbrd)}
-@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-
-/* ── Spinner ── */
-.spin{width:20px;height:20px;border:2px solid var(--goldbrd);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
-@keyframes sp{to{transform:rotate(360deg)}}
-
-/* ── Avatar ── */
-.ava{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--goldbrd)}
-.ava-ph{width:36px;height:36px;border-radius:50%;background:var(--goldbg);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:.9rem;font-weight:700;border:1px solid var(--goldbrd)}
-
-/* ── Drag handle ── */
-.drag-handle{cursor:grab;color:var(--text3);transition:color .15s;padding:.2rem}
-.drag-handle:hover{color:var(--gold2)}
-tr.dragging{opacity:.5;background:var(--goldbg)!important}
-tr.drag-over td{border-top:2px solid var(--gold)!important}
-
-/* ── Schedule ── */
-.schedule-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid rgba(201,169,98,0.05)}
-.schedule-row:last-child{border-bottom:none}
-.schedule-day{font-size:.875rem;color:var(--text)}
-.schedule-time{color:var(--gold);font-size:.875rem;font-weight:500;font-variant-numeric:tabular-nums}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:rgba(201,169,98,0.2);border-radius:99px}
-::-webkit-scrollbar-thumb:hover{background:rgba(201,169,98,0.4)}
-
-/* ── Mobile ── */
-#burger{display:none}
-@media(max-width:900px){
-  .sb{transform:translateX(-100%)}
-  .sb.open{transform:translateX(0)}
-  .main{margin-left:0}
-  .topbar,.content{padding-left:1rem;padding-right:1rem}
-  #burger{display:flex;padding:.4rem;background:var(--glass);border:1px solid var(--goldbrd);color:var(--text2);border-radius:var(--r2);cursor:pointer;line-height:0}
-  .fg2{grid-template-columns:1fr}
-}
-</style>
-</head>
-<body>
-<div class="layout">
-
-<!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
-<aside class="sb" id="sb">
-  <div class="sb-top">
-    <a href="/" style="text-decoration:none" class="sb-brand">
-      <span class="sb-milan">Milan</span>
-      <span class="sb-studio">Beauty Studio</span>
-    </a>
-  </div>
-  <nav class="sb-nav">
-    <div class="sb-sec">Контент</div>
-    <button class="sb-btn" data-p="categories">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-      <span>Категорії</span>
-    </button>
-    <button class="sb-btn" data-p="masters">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>Майстри</span>
-    </button>
-    <button class="sb-btn" data-p="services">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
-      <span>Послуги</span>
-    </button>
-    <button class="sb-btn" data-p="prices">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
-      <span>Прайс</span>
-    </button>
-    <button class="sb-btn" data-p="schedule">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="14" x2="16" y2="14" stroke-width="2" stroke-linecap="round"/></svg>
-      <span>Графік роботи</span>
-    </button>
-    <div class="sb-sec" style="margin-top:.5rem">Інструменти</div>
-    <button class="sb-btn" id="export-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span>Експорт JSON</span>
-    </button>
-  </nav>
-  <div class="sb-foot">
-    <button class="sb-btn" id="logout-btn" style="color:var(--danger)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span>Вийти</span>
-    </button>
-  </div>
-</aside>
-
-<!-- ══ MAIN ══════════════════════════════════════════════════ -->
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <button id="burger">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <span class="tb-title" id="tb-title">Категорії</span>
-    </div>
-    <div class="tb-user">
-      <span class="tb-dot"></span>
-      <span id="tb-email"></span>
-    </div>
-  </div>
-
-  <div class="content">
-
-    <!-- CATEGORIES -->
-    <div class="panel" id="p-categories">
-      <div class="ph">
-        <h2 class="ph-title">Категорії послуг</h2>
-        <button class="btn btn-gold" onclick="P.cats.openForm()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Нова категорія
-        </button>
-      </div>
-      <div class="card">
-        <table class="tbl">
-          <thead><tr><th style="width:44px"></th><th style="width:44px">#</th><th>Назва</th><th>Slug</th><th style="width:90px">Дії</th></tr></thead>
-          <tbody id="tb-cats"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- MASTERS -->
-    <div class="panel" id="p-masters">
-      <div class="ph">
-        <h2 class="ph-title">Майстри</h2>
-        <button class="btn btn-gold" onclick="P.masters.openForm()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Новий майстер
-        </button>
-      </div>
-      <div id="cat-tabs-masters" class="cat-tabs"></div>
-      <div class="card">
-        <table class="tbl">
-          <thead><tr><th style="width:44px"></th><th style="width:50px">Фото</th><th>Ім'я</th><th>Роль</th><th>Категорія</th><th style="width:90px">Дії</th></tr></thead>
-          <tbody id="tb-masters"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- SERVICES -->
-    <div class="panel" id="p-services">
-      <div class="ph">
-        <h2 class="ph-title">Послуги</h2>
-        <button class="btn btn-gold" onclick="P.svcs.openForm()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Нова послуга
-        </button>
-      </div>
-      <div id="cat-tabs-svcs" class="cat-tabs"></div>
-      <div class="card">
-        <table class="tbl">
-          <thead><tr><th style="width:44px"></th><th style="width:44px">#</th><th>Послуга</th><th>Категорія</th><th style="width:90px">Дії</th></tr></thead>
-          <tbody id="tb-svcs"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- PRICES -->
-    <div class="panel" id="p-prices">
-      <div class="ph">
-        <h2 class="ph-title">Прайс</h2>
-      </div>
-      <div id="cat-tabs-prices" class="cat-tabs"></div>
-      <div class="card" id="price-card">
-        <div class="tbl-loading"><div class="spin"></div></div>
-      </div>
-    </div>
-
-    <!-- SCHEDULE -->
-    <div class="panel" id="p-schedule">
-      <div class="ph">
-        <h2 class="ph-title">Графік роботи</h2>
-        <button class="btn btn-gold" onclick="P.sched.openForm()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Додати
-        </button>
-      </div>
-      <div class="card" id="sched-card"></div>
-    </div>
-
-  </div>
-</div>
-</div>
-
-<!-- ══ MODAL ═════════════════════════════════════════════════ -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-hdr">
-      <span class="modal-title" id="m-title">Редагувати</span>
-      <button class="icon-btn" onclick="closeModal()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div id="m-body"></div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal()">Скасувати</button>
-      <button class="btn btn-gold" id="m-save" onclick="saveModal()">Зберегти</button>
-    </div>
-  </div>
-</div>
-
-<div id="toasts"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
-<script>
-'use strict';
-
-// ── Supabase ────────────────────────────────────────────────
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ── Auth guard ──────────────────────────────────────────────
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) { location.href = 'login.html'; return; }
-  document.getElementById('tb-email').textContent = data.session.user.email;
-})();
-document.getElementById('logout-btn').onclick = async () => {
-  await sb.auth.signOut(); location.href = 'login.html';
-};
-
-// ── DB ──────────────────────────────────────────────────────
-const DB = {
-  async get(table, match = {}, order = ['position','id']) {
-    let q = sb.from(table).select('*');
-    Object.entries(match).forEach(([k,v]) => { q = q.eq(k, v); });
-    order.forEach(o => { q = q.order(o); });
-    const { data, error } = await q;
-    if (error) throw new Error(error.message);
-    return data || [];
-  },
-  async ins(table, row) {
-    const { data, error } = await sb.from(table).insert(row).select().single();
-    if (error) throw new Error(error.message);
-    return data;
-  },
-  async upd(table, id, row) {
-    const { error } = await sb.from(table).update(row).eq('id', id);
-    if (error) throw new Error(error.message);
-  },
-  async del(table, id) {
-    const { error } = await sb.from(table).delete().eq('id', id);
-    if (error) throw new Error(error.message);
-  },
-  async upsertPrice(serviceId, masterId, label) {
-    // Перевіряємо чи існує запис
-    const { data } = await sb.from('prices')
-      .select('id').eq('service_id', serviceId).eq('master_id', masterId).maybeSingle();
-    if (data) {
-      await sb.from('prices').update({ label }).eq('id', data.id);
-    } else {
-      await sb.from('prices').insert({ service_id: serviceId, master_id: masterId, label });
-    }
-  },
-  async deletePrice(serviceId, masterId) {
-    await sb.from('prices').delete()
-      .eq('service_id', serviceId).eq('master_id', masterId);
-  }
-};
-
-// ── Toast ───────────────────────────────────────────────────
-function toast(msg, type = 'ok') {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${type==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg> ${msg}`;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
-
-// ── Modal ───────────────────────────────────────────────────
-let _onSave = null;
-function openModal(title, html, onSave) {
-  document.getElementById('m-title').textContent = title;
-  document.getElementById('m-body').innerHTML = html;
-  _onSave = onSave;
-  document.getElementById('overlay').classList.add('open');
-  setTimeout(() => { document.querySelector('#m-body input,#m-body select')?.focus(); }, 120);
-}
-function closeModal() {
-  document.getElementById('overlay').classList.remove('open');
-  _onSave = null;
-}
-async function saveModal() {
-  if (!_onSave) return;
-  const btn = document.getElementById('m-save');
-  btn.disabled = true; btn.textContent = '...';
-  try { await _onSave(); closeModal(); }
-  catch(e) { toast(e.message || 'Помилка', 'err'); }
-  finally { btn.disabled = false; btn.textContent = 'Зберегти'; }
-}
-document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('overlay')) closeModal();
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-// ── Helpers ─────────────────────────────────────────────────
-const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const fv  = id => { const e=document.getElementById(id); if(!e)return null; const v=e.value.trim(); return v===''?null:v; };
-const fn  = id => { const v=fv(id); return v===null?null:Number(v); };
-
-function avatarEl(avatar, name, size=36) {
-  if (avatar) return `<img src="/${esc(avatar)}" class="ava" style="width:${size}px;height:${size}px" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="ava-ph" style="width:${size}px;height:${size}px;display:none">${esc(name[0])}</span>`;
-  return `<span class="ava-ph" style="width:${size}px;height:${size}px">${esc(name[0])}</span>`;
-}
-
-const DRAG_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>`;
-const EDIT_ICO = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
-const DEL_ICO  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
-
-// ── Drag & Drop for table rows ───────────────────────────────
-function initDrag(tbody, onReorder) {
-  let dragged = null;
-  tbody.querySelectorAll('tr').forEach(row => {
-    row.draggable = true;
-    row.addEventListener('dragstart', () => { dragged = row; row.classList.add('dragging'); });
-    row.addEventListener('dragend',   () => { dragged = null; row.classList.remove('dragging'); tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('drag-over')); });
-    row.addEventListener('dragover',  e => { e.preventDefault(); row.classList.add('drag-over'); });
-    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
-    row.addEventListener('drop', e => {
-      e.preventDefault(); row.classList.remove('drag-over');
-      if (dragged && dragged !== row) {
-        const rows = [...tbody.querySelectorAll('tr')];
-        const from = rows.indexOf(dragged), to = rows.indexOf(row);
-        if (from < to) tbody.insertBefore(dragged, row.nextSibling);
-        else tbody.insertBefore(dragged, row);
-        onReorder([...tbody.querySelectorAll('tr')].map(r => Number(r.dataset.id)));
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Milan Studio — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+      :root {
+        --bg: #080807;
+        --bg2: #0f0e0c;
+        --bg3: #161410;
+        --bg4: #1c1a16;
+        --gold: #c9a962;
+        --gold2: #e2c98a;
+        --gold3: #a8862e;
+        --gb: rgba(201, 169, 98, 0.1);
+        --gbd: rgba(201, 169, 98, 0.18);
+        --gbd2: rgba(201, 169, 98, 0.4);
+        --text: #ede9e3;
+        --t2: #b8b0a4;
+        --t3: #756d62;
+        --red: #e05555;
+        --redbg: rgba(224, 85, 85, 0.12);
+        --redbrd: rgba(224, 85, 85, 0.3);
+        --okbg: rgba(76, 175, 125, 0.12);
+        --okbrd: rgba(76, 175, 125, 0.3);
+        --r: 12px;
+        --r2: 8px;
+        --fd: "Cormorant Garamond", Georgia, serif;
+        --fb: "Manrope", system-ui, sans-serif;
       }
-    });
-  });
-}
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--fb);
+        font-size: 14px;
+        color: var(--text);
+        background: var(--bg);
+        min-height: 100vh;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
 
-// ── Category tabs ────────────────────────────────────────────
-function renderCatTabs(containerId, cats, activeCatId, onSelect) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = cats.map(c =>
-    `<button class="cat-tab${c.id===activeCatId?' active':''}" data-cid="${c.id}">${esc(c.name)}</button>`
-  ).join('');
-  el.querySelectorAll('.cat-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      el.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      onSelect(Number(btn.dataset.cid));
-    });
-  });
-}
+      /* Header */
+      .hdr {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        height: 58px;
+        background: rgba(8, 8, 7, 0.93);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--gbd);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.75rem;
+        gap: 1rem;
+      }
+      .hdr-brand {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+      }
+      .hdr-milan {
+        font-family: var(--fd);
+        font-size: 1.4rem;
+        color: var(--gold);
+        letter-spacing: 0.06em;
+      }
+      .hdr-studio {
+        font-size: 0.55rem;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--t3);
+      }
+      .hdr-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .hdr-email {
+        font-size: 0.75rem;
+        color: var(--t3);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4caf7d;
+        animation: blink 2s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      .nav-links {
+        display: flex;
+        gap: 0.25rem;
+      }
+      .nav-link {
+        padding: 0.35rem 0.75rem;
+        border-radius: var(--r2);
+        font-size: 0.8rem;
+        color: var(--t3);
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-family: var(--fb);
+        transition: all 0.15s;
+      }
+      .nav-link:hover {
+        color: var(--gold2);
+        background: var(--gb);
+      }
+      .nav-link.active {
+        color: var(--gold);
+        background: var(--gb);
+      }
 
-// ── Nav ─────────────────────────────────────────────────────
-const PANEL_NAMES = { categories:'Категорії', masters:'Майстри', services:'Послуги', prices:'Прайс', schedule:'Графік роботи' };
-function showPanel(id) {
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.sb-btn[data-p]').forEach(b=>b.classList.remove('active'));
-  document.getElementById('p-'+id)?.classList.add('active');
-  document.querySelector(`.sb-btn[data-p="${id}"]`)?.classList.add('active');
-  document.getElementById('tb-title').textContent = PANEL_NAMES[id] || '';
-  document.getElementById('sb').classList.remove('open');
-  P[id]?.load?.();
-}
-document.querySelectorAll('.sb-btn[data-p]').forEach(b => b.addEventListener('click', ()=>showPanel(b.dataset.p)));
-document.getElementById('burger').addEventListener('click', ()=>document.getElementById('sb').classList.toggle('open'));
+      /* Pages */
+      .page {
+        display: none;
+        animation: fi 0.22s ease;
+      }
+      .page.active {
+        display: block;
+      }
+      @keyframes fi {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 1.75rem;
+      }
 
-// ══════════════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════════════
-const S = { cats:[], masters:[], svcs:[], prices:[], sched:[] };
-let activePriceCat = null, activeMasterCat = null, activeSvcCat = null;
+      /* Breadcrumb */
+      .bc {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--t3);
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .bc-lnk {
+        color: var(--gold);
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .bc-lnk:hover {
+        opacity: 0.7;
+      }
+      .bc-sep {
+        opacity: 0.35;
+      }
 
-// ══════════════════════════════════════════════════════════════
-// PANELS
-// ══════════════════════════════════════════════════════════════
-const P = {};
+      /* Page title */
+      .ptitle {
+        font-family: var(--fd);
+        font-size: 1.65rem;
+        color: var(--gold2);
+        font-weight: 500;
+      }
 
-// ── CATEGORIES ──────────────────────────────────────────────
-P.categories = {
-  async load() {
-    S.cats = await DB.get('categories');
-    this.render();
-  },
-  render() {
-    const tb = document.getElementById('tb-cats');
-    if (!S.cats.length) { tb.innerHTML = `<tr><td colspan="5" class="tbl-empty">Немає категорій</td></tr>`; return; }
-    tb.innerHTML = S.cats.map(c=>`
-      <tr data-id="${c.id}">
-        <td><span class="drag-handle">${DRAG_ICO}</span></td>
-        <td><span class="pos-num">${c.position}</span></td>
-        <td>${esc(c.name)}</td>
-        <td><code style="font-size:.75rem;color:var(--text3)">${esc(c.slug)}</code></td>
-        <td><div class="acts">
-          <button class="icon-btn" onclick="P.categories.edit(${c.id})">${EDIT_ICO}</button>
-          <button class="icon-btn del" onclick="P.categories.del(${c.id})">${DEL_ICO}</button>
-        </div></td>
-      </tr>`).join('');
-    initDrag(tb, async ids => {
-      for (let i=0;i<ids.length;i++) await DB.upd('categories',ids[i],{position:i+1});
-      S.cats = await DB.get('categories'); toast('Порядок збережено ✓');
-    });
-  },
-  openForm(c={}) {
-    const isEdit = !!c.id;
-    openModal(isEdit?'Редагувати категорію':'Нова категорія',`
-      <div class="fg"><label>Назва *</label><input id="f-name" value="${esc(c.name||'')}"></div>
-      <div class="fg"><label>Slug *</label><input id="f-slug" value="${esc(c.slug||'')}" placeholder="hair"></div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${c.position||0}" min="0"></div>
-    `, async () => {
-      const row = { name:fv('f-name'), slug:fv('f-slug'), position:fn('f-pos') };
-      if (!row.name||!row.slug) throw new Error('Заповніть назву та slug');
-      if (isEdit) await DB.upd('categories',c.id,row); else await DB.ins('categories',row);
-      toast(isEdit?'Збережено ✓':'Категорію створено ✓');
-      await this.load();
-    });
-    if (!isEdit) setTimeout(()=>{
-      const ni=document.getElementById('f-name'), si=document.getElementById('f-slug');
-      ni?.addEventListener('input',()=>{ si.value=ni.value.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,''); });
-    },100);
-  },
-  edit(id) { this.openForm(S.cats.find(c=>c.id===id)||{}); },
-  async del(id) {
-    if (!confirm('Видалити категорію? Всі майстри, послуги та ціни будуть видалені!')) return;
-    await DB.del('categories',id); toast('Видалено');
-    await this.load();
-  }
-};
+      /* Category cards grid */
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 1rem;
+      }
+      .cat-card {
+        background: var(--bg3);
+        border: 1px solid var(--gbd);
+        border-radius: var(--r);
+        padding: 1.35rem 1.2rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+      .cat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(201, 169, 98, 0.04),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .cat-card:hover {
+        border-color: var(--gold);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+      .cat-card:hover::before {
+        opacity: 1;
+      }
+      .cat-card-acts {
+        position: absolute;
+        top: 0.7rem;
+        right: 0.7rem;
+        display: flex;
+        gap: 0.25rem;
+        opacity: 0;
+        transition: opacity 0.15s;
+        z-index: 2;
+      }
+      .cat-card:hover .cat-card-acts {
+        opacity: 1;
+      }
+      .cat-name {
+        font-family: var(--fd);
+        font-size: 1.15rem;
+        color: var(--gold2);
+        margin-bottom: 0.4rem;
+      }
+      .cat-meta {
+        font-size: 0.72rem;
+        color: var(--t3);
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+      .cat-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+      }
+      .cat-add {
+        background: none;
+        border: 1.5px dashed rgba(201, 169, 98, 0.22);
+        border-radius: var(--r);
+        padding: 1.35rem 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: var(--t3);
+        font-family: var(--fb);
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        width: 100%;
+      }
+      .cat-add:hover {
+        border-color: var(--gold);
+        color: var(--gold2);
+      }
 
-// ── MASTERS ─────────────────────────────────────────────────
-P.masters = {
-  async load() {
-    [S.cats, S.masters] = await Promise.all([DB.get('categories'), DB.get('masters')]);
-    if (!activeMasterCat && S.cats.length) activeMasterCat = S.cats[0].id;
-    renderCatTabs('cat-tabs-masters', S.cats, activeMasterCat, id=>{ activeMasterCat=id; this.render(); });
-    this.render();
-  },
-  render() {
-    const tb = document.getElementById('tb-masters');
-    const rows = activeMasterCat ? S.masters.filter(m=>m.category_id===activeMasterCat) : S.masters;
-    if (!rows.length) { tb.innerHTML=`<tr><td colspan="6" class="tbl-empty">Немає майстрів</td></tr>`; return; }
-    tb.innerHTML = rows.map(m=>{
-      const cat = S.cats.find(c=>c.id===m.category_id);
-      return `<tr data-id="${m.id}">
-        <td><span class="drag-handle">${DRAG_ICO}</span></td>
-        <td>${avatarEl(m.avatar, m.name)}</td>
-        <td>${esc(m.name)}</td>
-        <td>${m.role==='Топ-майстер'?`<span class="badge badge-top">⭐ ${esc(m.role)}</span>`:`<span class="badge badge-master">${esc(m.role||'—')}</span>`}</td>
-        <td style="color:var(--text2);font-size:.8rem">${cat?esc(cat.name):'—'}</td>
-        <td><div class="acts">
-          <button class="icon-btn" onclick="P.masters.edit(${m.id})">${EDIT_ICO}</button>
-          <button class="icon-btn del" onclick="P.masters.del(${m.id})">${DEL_ICO}</button>
-        </div></td>
-      </tr>`;
-    }).join('');
-    initDrag(tb, async ids=>{ for(let i=0;i<ids.length;i++) await DB.upd('masters',ids[i],{position:i+1}); toast('Порядок збережено ✓'); });
-  },
-  openForm(m={}) {
-    const isEdit = !!m.id;
-    const catOpts = S.cats.map(c=>`<option value="${c.id}" ${m.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
-    openModal(isEdit?'Редагувати майстра':'Новий майстер',`
-      <div class="fg"><label>Категорія *</label><select id="f-cat"><option value="">— обрати —</option>${catOpts}</select></div>
-      <div class="fg"><label>Ім'я *</label><input id="f-name" value="${esc(m.name||'')}"></div>
-      <div class="fg"><label>Роль</label>
-        <select id="f-role">
-          <option value="Майстер" ${m.role==='Майстер'?'selected':''}>Майстер</option>
-          <option value="Топ-майстер" ${m.role==='Топ-майстер'?'selected':''}>Топ-майстер</option>
-        </select>
+      /* Category detail layout */
+      .cat-detail {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1.25rem;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .cat-detail {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Block */
+      .blk {
+        background: var(--bg3);
+        border: 1px solid var(--gbd);
+        border-radius: var(--r);
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+      }
+      .blk-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.8rem 1.1rem;
+        border-bottom: 1px solid var(--gbd);
+        background: rgba(0, 0, 0, 0.15);
+        gap: 0.5rem;
+      }
+      .blk-title {
+        font-size: 0.65rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--t3);
+        font-weight: 600;
+      }
+      .blk-body {
+        padding: 0.35rem 0;
+      }
+
+      /* Service rows */
+      .svc-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid rgba(201, 169, 98, 0.04);
+        transition: background 0.15s;
+        cursor: default;
+      }
+      .svc-row:last-child {
+        border-bottom: none;
+      }
+      .svc-row:hover {
+        background: rgba(201, 169, 98, 0.04);
+      }
+      .svc-row.is-hdr {
+        background: rgba(201, 169, 98, 0.05);
+      }
+      .svc-row.is-hdr .svc-lbl {
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .svc-lbl {
+        flex: 1;
+        font-size: 0.875rem;
+        color: var(--text);
+      }
+      .svc-drag {
+        color: var(--t3);
+        cursor: grab;
+        line-height: 0;
+        flex-shrink: 0;
+        padding: 0.1rem;
+        transition: color 0.15s;
+      }
+      .svc-drag:hover {
+        color: var(--gold2);
+      }
+      .row-acts {
+        display: flex;
+        gap: 0.25rem;
+        flex-shrink: 0;
+      }
+      .svc-empty {
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--t3);
+        font-size: 0.8rem;
+      }
+
+      /* Master rows */
+      .master-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 1.1rem;
+        border-bottom: 1px solid rgba(201, 169, 98, 0.04);
+        transition: background 0.15s;
+      }
+      .master-row:last-child {
+        border-bottom: none;
+      }
+      .master-row:hover {
+        background: rgba(201, 169, 98, 0.04);
+      }
+      .mava {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--gbd);
+        flex-shrink: 0;
+      }
+      .mava-ph {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--gb);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold);
+        font-size: 0.85rem;
+        font-weight: 700;
+        border: 1px solid var(--gbd);
+        flex-shrink: 0;
+      }
+      .master-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .master-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      .master-role {
+        font-size: 0.72rem;
+        color: var(--t3);
+      }
+      .badge-top {
+        display: inline-block;
+        background: var(--gb);
+        color: var(--gold2);
+        border: 1px solid var(--gbd);
+        border-radius: 99px;
+        font-size: 0.62rem;
+        padding: 0.1rem 0.4rem;
+        font-weight: 600;
+        margin-left: 0.3rem;
+        vertical-align: middle;
+      }
+
+      /* Price table */
+      .ptbl-wrap {
+        overflow-x: auto;
+      }
+      .ptbl {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .ptbl th {
+        padding: 0.65rem 0.9rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--t3);
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--gbd);
+        text-align: center;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .ptbl th:first-child {
+        text-align: left;
+        min-width: 180px;
+      }
+      .ptbl td {
+        padding: 0.6rem 0.9rem;
+        border-bottom: 1px solid rgba(201, 169, 98, 0.05);
+        vertical-align: middle;
+        font-size: 0.85rem;
+      }
+      .ptbl tr:last-child td {
+        border-bottom: none;
+      }
+      .ptbl tbody tr:hover td {
+        background: rgba(201, 169, 98, 0.03);
+      }
+      .ptbl td:not(:first-child) {
+        text-align: center;
+      }
+      .ptbl .hdr-row td {
+        background: rgba(201, 169, 98, 0.06);
+        padding: 0.45rem 0.9rem;
+      }
+      .ptbl .hdr-row td span {
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .pval {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.3rem 0.65rem;
+        background: var(--gb);
+        border: 1px solid var(--gbd);
+        border-radius: 6px;
+        color: var(--gold2);
+        font-size: 0.78rem;
+        font-weight: 500;
+        cursor: pointer;
+        min-width: 78px;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .pval:hover {
+        background: rgba(201, 169, 98, 0.18);
+        border-color: var(--gbd2);
+      }
+      .padd {
+        color: var(--t3);
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        opacity: 0.6;
+      }
+      .padd:hover {
+        opacity: 1;
+        color: var(--gold2);
+        background: var(--gb);
+      }
+      .mhead {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.3rem;
+        min-width: 80px;
+      }
+      .mhead-img {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--gbd);
+      }
+      .mhead-ph {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--gb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold);
+        font-size: 0.7rem;
+        font-weight: 700;
+        border: 1px solid var(--gbd);
+      }
+      .mhead-nm {
+        font-size: 0.68rem;
+        color: var(--t2);
+        text-align: center;
+      }
+      .mhead-role {
+        font-size: 0.6rem;
+        color: var(--gold);
+        text-align: center;
+      }
+
+      /* Schedule rows */
+      .sched-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid rgba(201, 169, 98, 0.05);
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .sched-row:last-child {
+        border-bottom: none;
+      }
+      .sched-day {
+        font-size: 0.875rem;
+        flex: 1;
+      }
+      .sched-time {
+        color: var(--gold);
+        font-weight: 500;
+        font-size: 0.875rem;
+        white-space: nowrap;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--r2);
+        font-family: var(--fb);
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.18s;
+        white-space: nowrap;
+        line-height: 1.4;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-g {
+        background: linear-gradient(135deg, var(--gold), var(--gold3));
+        color: #1a1511;
+      }
+      .btn-g:hover:not(:disabled) {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(201, 169, 98, 0.25);
+      }
+      .btn-o {
+        background: var(--bg4);
+        color: var(--t2);
+        border-color: var(--gbd);
+      }
+      .btn-o:hover:not(:disabled) {
+        color: var(--gold2);
+        border-color: var(--gbd2);
+        background: var(--gb);
+      }
+      .btn-sm {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.78rem;
+      }
+      .ib {
+        padding: 0.35rem;
+        background: none;
+        border: 1px solid var(--gbd);
+        color: var(--t3);
+        border-radius: var(--r2);
+        cursor: pointer;
+        line-height: 0;
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+      }
+      .ib:hover {
+        color: var(--gold2);
+        border-color: var(--gbd2);
+        background: var(--gb);
+      }
+      .ib.r:hover {
+        color: var(--red);
+        border-color: var(--redbrd);
+        background: var(--redbg);
+      }
+
+      /* Modal */
+      .ov {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.78);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.2s,
+          visibility 0.2s;
+        backdrop-filter: blur(5px);
+      }
+      .ov.open {
+        opacity: 1;
+        visibility: visible;
+      }
+      .mdl {
+        background: var(--bg3);
+        border: 1px solid var(--gbd);
+        border-radius: 16px;
+        padding: 1.75rem;
+        width: 100%;
+        max-width: 460px;
+        max-height: 92vh;
+        overflow-y: auto;
+        transform: translateY(14px) scale(0.97);
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+      }
+      .ov.open .mdl {
+        transform: none;
+      }
+      .mhdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.4rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--gbd);
+      }
+      .mtitle {
+        font-family: var(--fd);
+        font-size: 1.25rem;
+        color: var(--gold2);
+      }
+      .mfoot {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 1.25rem;
+        padding-top: 0.9rem;
+        border-top: 1px solid var(--gbd);
+      }
+
+      /* Forms */
+      .fg {
+        display: flex;
+        flex-direction: column;
+        gap: 0.32rem;
+        margin-bottom: 0.85rem;
+      }
+      .fg label {
+        font-size: 0.75rem;
+        color: var(--t2);
+        font-weight: 500;
+      }
+      .fg input,
+      .fg textarea,
+      .fg select {
+        padding: 0.6rem 0.85rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--gbd);
+        border-radius: var(--r2);
+        color: var(--text);
+        font-family: var(--fb);
+        font-size: 0.875rem;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+        width: 100%;
+      }
+      .fg input:focus,
+      .fg textarea:focus,
+      .fg select:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.08);
+      }
+      .fg select option {
+        background: var(--bg3);
+      }
+      .fg small {
+        font-size: 0.7rem;
+        color: var(--t3);
+      }
+      .fg2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      /* Toast */
+      #tst {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        z-index: 999;
+        pointer-events: none;
+      }
+      .t {
+        padding: 0.7rem 1rem;
+        border-radius: var(--r2);
+        font-size: 0.82rem;
+        pointer-events: auto;
+        animation: tin 0.22s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-width: 190px;
+      }
+      .t.ok {
+        background: var(--okbg);
+        color: #7dd4a8;
+        border: 1px solid var(--okbrd);
+      }
+      .t.er {
+        background: var(--redbg);
+        color: #e88;
+        border: 1px solid var(--redbrd);
+      }
+      @keyframes tin {
+        from {
+          opacity: 0;
+          transform: translateX(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Spinner */
+      .sp {
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--gbd);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spr 0.7s linear infinite;
+        display: inline-block;
+        flex-shrink: 0;
+      }
+      @keyframes spr {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 2.5rem;
+        color: var(--t3);
+      }
+
+      /* Drag */
+      .dragging {
+        opacity: 0.35;
+      }
+      .dragover-top {
+        border-top: 2px solid var(--gold) !important;
+      }
+
+      /* Logout */
+      .logout-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: var(--fb);
+        font-size: 0.78rem;
+        color: var(--red);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: var(--r2);
+        transition: background 0.15s;
+      }
+      .logout-btn:hover {
+        background: var(--redbg);
+      }
+
+      @media (max-width: 600px) {
+        .fg2 {
+          grid-template-columns: 1fr;
+        }
+        .wrap {
+          padding: 1rem 1rem 2rem;
+        }
+        .cat-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="hdr">
+      <div class="hdr-brand">
+        <span class="hdr-milan">Milan</span>
+        <span class="hdr-studio">Beauty Studio</span>
       </div>
-      <div class="fg"><label>Фото (шлях)</label><input id="f-avatar" value="${esc(m.avatar||'')}" placeholder="images/team/name.jpg"><small>Відносний шлях від кореня сайту</small></div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${m.position||0}" min="0"></div>
-    `, async()=>{
-      const row={category_id:fn('f-cat'),name:fv('f-name'),role:fv('f-role'),avatar:fv('f-avatar'),position:fn('f-pos')};
-      if (!row.category_id||!row.name) throw new Error('Заповніть категорію та ім\'я');
-      if (isEdit) await DB.upd('masters',m.id,row); else await DB.ins('masters',row);
-      toast(isEdit?'Збережено ✓':'Майстра додано ✓');
-      await this.load();
-    });
-  },
-  edit(id){ this.openForm(S.masters.find(m=>m.id===id)||{}); },
-  async del(id){
-    if (!confirm('Видалити майстра?')) return;
-    await DB.del('masters',id); toast('Видалено'); await this.load();
-  }
-};
+      <div class="hdr-right">
+        <nav class="nav-links">
+          <button class="nav-link active" id="nav-cats" onclick="goCats()">
+            Категорії
+          </button>
+          <button class="nav-link" id="nav-masters" onclick="goMasters()">
+            Майстри
+          </button>
+          <button class="nav-link" id="nav-sched" onclick="goSched()">
+            Графік
+          </button>
+        </nav>
+        <span class="hdr-email"
+          ><span class="dot"></span><span id="u-email"></span
+        ></span>
+        <button class="logout-btn" id="logout-btn">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Вийти
+        </button>
+      </div>
+    </header>
 
-// ── SERVICES ────────────────────────────────────────────────
-P.services = {
-  async load(){
-    [S.cats, S.svcs] = await Promise.all([DB.get('categories'), DB.get('services')]);
-    if (!activeSvcCat && S.cats.length) activeSvcCat = S.cats[0].id;
-    renderCatTabs('cat-tabs-svcs', S.cats, activeSvcCat, id=>{ activeSvcCat=id; this.render(); });
-    this.render();
-  },
-  render(){
-    const tb = document.getElementById('tb-svcs');
-    const rows = activeSvcCat ? S.svcs.filter(s=>s.category_id===activeSvcCat) : S.svcs;
-    if (!rows.length){ tb.innerHTML=`<tr><td colspan="5" class="tbl-empty">Немає послуг</td></tr>`; return; }
-    tb.innerHTML = rows.map(s=>{
-      const cat=S.cats.find(c=>c.id===s.category_id);
-      return `<tr data-id="${s.id}">
-        <td><span class="drag-handle">${DRAG_ICO}</span></td>
-        <td><span class="pos-num">${s.position}</span></td>
-        <td>${esc(s.name)}</td>
-        <td style="color:var(--text2);font-size:.8rem">${cat?esc(cat.name):'—'}</td>
-        <td><div class="acts">
-          <button class="icon-btn" onclick="P.svcs.edit(${s.id})">${EDIT_ICO}</button>
-          <button class="icon-btn del" onclick="P.svcs.del(${s.id})">${DEL_ICO}</button>
-        </div></td>
-      </tr>`;
-    }).join('');
-    initDrag(tb, async ids=>{ for(let i=0;i<ids.length;i++) await DB.upd('services',ids[i],{position:i+1}); toast('Порядок збережено ✓'); await this.load(); });
-  },
-  openForm(s={}){
-    const isEdit=!!s.id;
-    const catOpts=S.cats.map(c=>`<option value="${c.id}" ${s.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
-    openModal(isEdit?'Редагувати послугу':'Нова послуга',`
-      <div class="fg"><label>Категорія *</label><select id="f-cat"><option value="">— обрати —</option>${catOpts}</select></div>
-      <div class="fg"><label>Назва послуги *</label><input id="f-name" value="${esc(s.name||'')}"></div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position||0}" min="0"></div>
-    `, async()=>{
-      const row={category_id:fn('f-cat'),name:fv('f-name'),position:fn('f-pos')};
-      if (!row.category_id||!row.name) throw new Error('Заповніть категорію та назву');
-      if (isEdit) await DB.upd('services',s.id,row); else await DB.ins('services',row);
-      toast(isEdit?'Збережено ✓':'Послугу додано ✓');
-      await this.load();
-    });
-  },
-  edit(id){ this.openForm(S.svcs.find(s=>s.id===id)||{}); },
-  async del(id){
-    if (!confirm('Видалити послугу?')) return;
-    await DB.del('services',id); toast('Видалено'); await this.load();
-  }
-};
-P.svcs = P.services; // alias
+    <!-- ═══ PAGE: CATEGORIES HOME ═══════════════════════════════ -->
+    <div class="page active" id="pg-home">
+      <div class="wrap">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+          "
+        >
+          <h1 class="ptitle">Категорії</h1>
+          <button class="btn btn-o btn-sm" onclick="exportJSON()">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Експорт JSON
+          </button>
+        </div>
+        <div class="cat-grid" id="cat-grid">
+          <div class="loading" style="grid-column: 1/-1">
+            <div class="sp"></div>
+            Завантаження...
+          </div>
+        </div>
+      </div>
+    </div>
 
-// ── PRICES ──────────────────────────────────────────────────
-P.prices = {
-  async load(){
-    [S.cats, S.masters, S.svcs, S.prices] = await Promise.all([
-      DB.get('categories'), DB.get('masters'), DB.get('services'), DB.get('prices')
-    ]);
-    if (!activePriceCat && S.cats.length) activePriceCat = S.cats[0].id;
-    renderCatTabs('cat-tabs-prices', S.cats, activePriceCat, id=>{ activePriceCat=id; this.render(); });
-    this.render();
-  },
-  render(){
-    const card = document.getElementById('price-card');
-    const catMasters = S.masters.filter(m=>m.category_id===activePriceCat);
-    const catSvcs    = S.svcs.filter(s=>s.category_id===activePriceCat);
+    <!-- ═══ PAGE: CATEGORY DETAIL ══════════════════════════════ -->
+    <div class="page" id="pg-cat">
+      <div class="wrap">
+        <div class="bc">
+          <span class="bc-lnk" onclick="goCats()">Категорії</span>
+          <span class="bc-sep">›</span>
+          <span id="bc-name">—</span>
+        </div>
 
-    if (!catSvcs.length){
-      card.innerHTML=`<div class="tbl-empty">Немає послуг у цій категорії</div>`; return;
-    }
-    if (!catMasters.length){
-      card.innerHTML=`<div class="tbl-empty">Немає майстрів у цій категорії</div>`; return;
-    }
+        <div
+          style="
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+          "
+        >
+          <h1 class="ptitle" id="cat-title"></h1>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+            <button class="btn btn-o btn-sm" id="btn-add-hdr">
+              + Заголовок
+            </button>
+            <button class="btn btn-g btn-sm" id="btn-add-svc">+ Послуга</button>
+          </div>
+        </div>
 
-    // Header
-    let html = `<div style="overflow-x:auto"><table class="price-grid"><thead><tr><th>Послуга</th>`;
-    catMasters.forEach(m=>{
-      html+=`<th><div class="master-head">
-        ${m.avatar?`<img src="/${esc(m.avatar)}" class="master-ava" onerror="this.style.display='none'">`:`<div class="master-ava-ph">${esc(m.name[0])}</div>`}
-        <span style="font-size:.72rem;color:var(--text2)">${esc(m.name)}</span>
-        ${m.role==='Топ-майстер'?`<span class="badge badge-top" style="font-size:.6rem">Топ</span>`:''}
-      </div></th>`;
-    });
-    html+=`</tr></thead><tbody>`;
+        <div class="cat-detail">
+          <!-- LEFT: services list + price table -->
+          <div>
+            <!-- Services & price table -->
+            <div class="blk">
+              <div class="blk-hdr">
+                <span class="blk-title">Послуги та ціни</span>
+              </div>
+              <div id="price-table-wrap">
+                <div class="loading"><div class="sp"></div></div>
+              </div>
+            </div>
+          </div>
 
-    catSvcs.forEach(svc=>{
-      html+=`<tr><td>${esc(svc.name)}</td>`;
-      catMasters.forEach(m=>{
-        const p = S.prices.find(pr=>pr.service_id===svc.id && pr.master_id===m.id);
-        const val = p?.label || (p?.price_to ? `${p.price_from}–${p.price_to}` : p?.price_from ? `${p.price_from} ₴` : null);
-        html+=`<td class="price-cell">
-          <span class="${val?'price-val':'price-empty'}" 
-            onclick="P.prices.editCell(${svc.id},${m.id},'${esc(val||'')}','${esc(svc.name)}','${esc(m.name)}')">
-            ${val ? esc(val) : '+ додати'}
+          <!-- RIGHT: masters -->
+          <div>
+            <div class="blk">
+              <div class="blk-hdr">
+                <span class="blk-title">Майстри цієї категорії</span>
+                <button class="btn btn-g btn-sm" id="btn-add-master">
+                  + Майстер
+                </button>
+              </div>
+              <div id="cat-masters-list">
+                <div class="loading"><div class="sp"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: ALL MASTERS ═══════════════════════════════════ -->
+    <div class="page" id="pg-masters">
+      <div class="wrap">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+          "
+        >
+          <h1 class="ptitle">Всі майстри</h1>
+          <button class="btn btn-g" onclick="openMasterForm()">
+            + Новий майстер
+          </button>
+        </div>
+        <div id="all-masters-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: SCHEDULE ══════════════════════════════════════ -->
+    <div class="page" id="pg-sched">
+      <div class="wrap">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+          "
+        >
+          <h1 class="ptitle">Графік роботи</h1>
+          <button class="btn btn-g" onclick="openSchedForm()">+ Додати</button>
+        </div>
+        <div class="blk" id="sched-list"></div>
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="ov" id="ov">
+      <div class="mdl">
+        <div class="mhdr">
+          <span class="mtitle" id="m-title"></span>
+          <button class="ib" onclick="closeModal()">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div id="m-body"></div>
+        <div class="mfoot">
+          <button class="btn btn-o" onclick="closeModal()">Скасувати</button>
+          <button class="btn btn-g" id="m-ok" onclick="doSave()">
+            Зберегти
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tst"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="config.js"></script>
+    <script>
+      "use strict";
+
+      // ── Supabase ────────────────────────────────────────────────
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // ── Auth ────────────────────────────────────────────────────
+      (async () => {
+        const { data } = await sb.auth.getSession();
+        if (!data.session) {
+          location.href = "login.html";
+          return;
+        }
+        document.getElementById("u-email").textContent =
+          data.session.user.email;
+      })();
+      document.getElementById("logout-btn").onclick = async () => {
+        await sb.auth.signOut();
+        location.href = "login.html";
+      };
+
+      // ── DB helpers ──────────────────────────────────────────────
+      const DB = {
+        async all(table, match = {}) {
+          let q = sb.from(table).select("*").order("position").order("id");
+          for (const [k, v] of Object.entries(match)) q = q.eq(k, v);
+          const { data, error } = await q;
+          if (error) throw new Error(error.message);
+          return data || [];
+        },
+        async ins(table, row) {
+          const { data, error } = await sb
+            .from(table)
+            .insert(row)
+            .select()
+            .single();
+          if (error) throw new Error(error.message);
+          return data;
+        },
+        async upd(table, id, row) {
+          const { error } = await sb.from(table).update(row).eq("id", id);
+          if (error) throw new Error(error.message);
+        },
+        async del(table, id) {
+          const { error } = await sb.from(table).delete().eq("id", id);
+          if (error) throw new Error(error.message);
+        },
+        async upsertPrice(sid, mid, label) {
+          const { data } = await sb
+            .from("prices")
+            .select("id")
+            .eq("service_id", sid)
+            .eq("master_id", mid)
+            .maybeSingle();
+          if (data)
+            await sb
+              .from("prices")
+              .update({ label, price_from: null, price_to: null })
+              .eq("id", data.id);
+          else
+            await sb
+              .from("prices")
+              .insert({ service_id: sid, master_id: mid, label });
+        },
+        async delPrice(sid, mid) {
+          await sb
+            .from("prices")
+            .delete()
+            .eq("service_id", sid)
+            .eq("master_id", mid);
+        },
+      };
+
+      // ── State ───────────────────────────────────────────────────
+      let S = { cats: [], masters: [], svcs: [], prices: [], sched: [] };
+      let activeCatId = null;
+
+      // ── Toast ───────────────────────────────────────────────────
+      function toast(msg, type = "ok") {
+        const el = document.createElement("div");
+        el.className = `t ${type}`;
+        el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${type === "ok" ? '<polyline points="20 6 9 17 4 12"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>'}</svg> ${msg}`;
+        document.getElementById("tst").appendChild(el);
+        setTimeout(() => el.remove(), 3200);
+      }
+
+      // ── Modal ───────────────────────────────────────────────────
+      let _save = null;
+      function modal(title, html, onSave) {
+        document.getElementById("m-title").textContent = title;
+        document.getElementById("m-body").innerHTML = html;
+        _save = onSave;
+        document.getElementById("ov").classList.add("open");
+        setTimeout(
+          () =>
+            document.querySelector("#m-body input, #m-body select")?.focus(),
+          110,
+        );
+      }
+      function closeModal() {
+        document.getElementById("ov").classList.remove("open");
+        _save = null;
+      }
+      async function doSave() {
+        if (!_save) return;
+        const btn = document.getElementById("m-ok");
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await _save();
+          closeModal();
+        } catch (e) {
+          toast(e.message || "Помилка", "er");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Зберегти";
+        }
+      }
+      document.getElementById("ov").addEventListener("click", (e) => {
+        if (e.target.id === "ov") closeModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      // ── Helpers ─────────────────────────────────────────────────
+      const esc = (s) =>
+        s == null
+          ? ""
+          : String(s)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+      const fv = (id) => {
+        const e = document.getElementById(id);
+        if (!e) return null;
+        const v = e.value.trim();
+        return v === "" ? null : v;
+      };
+      const fn = (id) => {
+        const v = fv(id);
+        return v === null ? null : Number(v);
+      };
+
+      const EDIT_ICO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+      const DEL_ICO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`;
+
+      function avaEl(avatar, name, size = 34) {
+        return avatar
+          ? `<img src="/${esc(avatar)}" class="mava" style="width:${size}px;height:${size}px" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'""><span class="mava-ph" style="width:${size}px;height:${size}px;display:none">${esc(name[0])}</span>`
+          : `<span class="mava-ph" style="width:${size}px;height:${size}px">${esc(name[0])}</span>`;
+      }
+
+      // ── Navigation ───────────────────────────────────────────────
+      function setPage(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        window.scrollTo(0, 0);
+      }
+      function setNav(id) {
+        document
+          .querySelectorAll(".nav-link")
+          .forEach((n) => n.classList.remove("active"));
+        document.getElementById(id)?.classList.add("active");
+      }
+
+      function goCats() {
+        setNav("nav-cats");
+        setPage("pg-home");
+        loadHome();
+      }
+      function goMasters() {
+        setNav("nav-masters");
+        setPage("pg-masters");
+        loadAllMasters();
+      }
+      function goSched() {
+        setNav("nav-sched");
+        setPage("pg-sched");
+        loadSched();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      // HOME — категорії
+      // ══════════════════════════════════════════════════════════════
+      async function loadHome() {
+        const grid = document.getElementById("cat-grid");
+        grid.innerHTML = `<div class="loading" style="grid-column:1/-1"><div class="sp"></div></div>`;
+
+        [S.cats, S.masters, S.svcs] = await Promise.all([
+          DB.all("categories"),
+          DB.all("masters"),
+          DB.all("services"),
+        ]);
+
+        grid.innerHTML =
+          S.cats
+            .map((c) => {
+              const mCnt = S.masters.filter(
+                (m) => m.category_id === c.id,
+              ).length;
+              const sCnt = S.svcs.filter((s) => s.category_id === c.id).length;
+              return `
+    <div class="cat-card" onclick="openCat(${c.id})">
+      <div class="cat-card-acts" onclick="event.stopPropagation()">
+        <button class="ib" onclick="editCat(${c.id})">${EDIT_ICO}</button>
+        <button class="ib r" onclick="delCat(${c.id})">${DEL_ICO}</button>
+      </div>
+      <div class="cat-name">${esc(c.name)}</div>
+      <div class="cat-meta">
+        <span>👤 ${mCnt}</span>
+        <span>📋 ${sCnt} послуг</span>
+      </div>
+    </div>`;
+            })
+            .join("") +
+          `
+  <button class="cat-add" onclick="addCat()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Нова категорія
+  </button>`;
+      }
+
+      function addCat() {
+        modal(
+          "Нова категорія",
+          `
+    <div class="fg"><label>Назва *</label><input id="f-name" placeholder="Перукар / Колорист"></div>
+    <div class="fg"><label>Slug *</label><input id="f-slug" placeholder="hair"><small>Латинські літери без пробілів</small></div>
+    <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="0" min="0"></div>
+  `,
+          async () => {
+            const row = {
+              name: fv("f-name"),
+              slug: fv("f-slug"),
+              position: fn("f-pos"),
+            };
+            if (!row.name || !row.slug)
+              throw new Error("Введіть назву та slug");
+            await DB.ins("categories", row);
+            toast("Категорію створено ✓");
+            await loadHome();
+          },
+        );
+        setTimeout(() => {
+          const ni = document.getElementById("f-name"),
+            si = document.getElementById("f-slug");
+          ni?.addEventListener("input", () => {
+            si.value = ni.value
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^\w-]/g, "");
+          });
+        }, 110);
+      }
+
+      function editCat(id) {
+        const c = S.cats.find((x) => x.id === id);
+        if (!c) return;
+        modal(
+          "Редагувати категорію",
+          `
+    <div class="fg"><label>Назва *</label><input id="f-name" value="${esc(c.name)}"></div>
+    <div class="fg"><label>Slug *</label><input id="f-slug" value="${esc(c.slug)}"></div>
+    <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${c.position || 0}" min="0"></div>
+  `,
+          async () => {
+            const row = {
+              name: fv("f-name"),
+              slug: fv("f-slug"),
+              position: fn("f-pos"),
+            };
+            if (!row.name || !row.slug)
+              throw new Error("Введіть назву та slug");
+            await DB.upd("categories", id, row);
+            toast("Збережено ✓");
+            await loadHome();
+          },
+        );
+      }
+
+      async function delCat(id) {
+        if (
+          !confirm(
+            "Видалити категорію? Всі майстри, послуги і ціни будуть видалені!",
+          )
+        )
+          return;
+        await DB.del("categories", id);
+        toast("Видалено");
+        await loadHome();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      // CATEGORY DETAIL
+      // ══════════════════════════════════════════════════════════════
+      async function openCat(catId) {
+        activeCatId = catId;
+        setNav("nav-cats");
+        setPage("pg-cat");
+
+        // Load fresh data
+        [S.cats, S.masters, S.svcs, S.prices] = await Promise.all([
+          DB.all("categories"),
+          DB.all("masters"),
+          DB.all("services"),
+          DB.all("prices"),
+        ]);
+
+        const cat = S.cats.find((c) => c.id === catId);
+        document.getElementById("bc-name").textContent = cat?.name || "";
+        document.getElementById("cat-title").textContent = cat?.name || "";
+
+        document.getElementById("btn-add-hdr").onclick = () =>
+          addSvc(catId, true);
+        document.getElementById("btn-add-svc").onclick = () =>
+          addSvc(catId, false);
+        document.getElementById("btn-add-master").onclick = () =>
+          openMasterForm({}, catId);
+
+        renderPriceTable(catId);
+        renderCatMasters(catId);
+      }
+
+      // ── Price / Services table ───────────────────────────────────
+      function renderPriceTable(catId) {
+        const wrap = document.getElementById("price-table-wrap");
+        const catMasters = S.masters.filter((m) => m.category_id === catId);
+        const catSvcs = S.svcs.filter((s) => s.category_id === catId);
+
+        if (!catSvcs.length) {
+          wrap.innerHTML = `<div class="svc-empty">Немає послуг.<br>Натисніть «+ Заголовок» або «+ Послуга»</div>`;
+          return;
+        }
+
+        // If no masters yet — show simple list
+        if (!catMasters.length) {
+          wrap.innerHTML = `
+      <div class="svc-empty" style="color:var(--t3)">Спочатку додайте майстрів →</div>
+      ${catSvcs
+        .map(
+          (s) => `
+        <div class="svc-row ${s.is_header ? "is-hdr" : ""}">
+          <span class="svc-lbl">${esc(s.name)}</span>
+          <div class="row-acts">
+            <button class="ib" onclick="editSvc(${s.id})">${EDIT_ICO}</button>
+            <button class="ib r" onclick="delSvc(${s.id})">${DEL_ICO}</button>
+          </div>
+        </div>`,
+        )
+        .join("")}`;
+          return;
+        }
+
+        let html = `<div class="ptbl-wrap"><table class="ptbl"><thead><tr><th>Послуга</th>`;
+        catMasters.forEach((m) => {
+          html += `<th><div class="mhead">
+      ${
+        m.avatar
+          ? `<img src="/${esc(m.avatar)}" class="mhead-img" onerror="this.style.display='none'">`
+          : `<div class="mhead-ph">${esc(m.name[0])}</div>`
+      }
+      <span class="mhead-nm">${esc(m.name)}</span>
+      ${m.role === "Топ-майстер" ? `<span class="mhead-role">★ Топ</span>` : ""}
+    </div></th>`;
+        });
+        html += `<th style="width:60px"></th></tr></thead><tbody>`;
+
+        catSvcs.forEach((svc) => {
+          if (svc.is_header) {
+            const cols = catMasters.length + 2;
+            html += `<tr class="hdr-row"><td colspan="${cols}">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span>${esc(svc.name)}</span>
+          <div style="display:flex;gap:.25rem">
+            <button class="ib" onclick="editSvc(${svc.id})">${EDIT_ICO}</button>
+            <button class="ib r" onclick="delSvc(${svc.id})">${DEL_ICO}</button>
+          </div>
+        </div>
+      </td></tr>`;
+          } else {
+            html += `<tr><td>${esc(svc.name)}</td>`;
+            catMasters.forEach((m) => {
+              const p = S.prices.find(
+                (pr) => pr.service_id === svc.id && pr.master_id === m.id,
+              );
+              const val =
+                p?.label ||
+                (p?.price_to
+                  ? `${p.price_from}–${p.price_to} ₴`
+                  : p?.price_from
+                    ? `${p.price_from} ₴`
+                    : null);
+              html += `<td>
+          <span class="${val ? "pval" : "padd"}"
+            onclick="editPrice(${svc.id},${m.id},'${esc(val || "")}','${esc(svc.name)}','${esc(m.name)}')">
+            ${val ? esc(val) : "+ ціна"}
           </span>
         </td>`;
-      });
-      html+=`</tr>`;
-    });
+            });
+            html += `<td><div style="display:flex;gap:.25rem;justify-content:flex-end">
+        <button class="ib" onclick="editSvc(${svc.id})">${EDIT_ICO}</button>
+        <button class="ib r" onclick="delSvc(${svc.id})">${DEL_ICO}</button>
+      </div></td></tr>`;
+          }
+        });
 
-    html+=`</tbody></table></div>`;
-    card.innerHTML=html;
-  },
-  editCell(svcId, masterId, currentVal, svcName, masterName){
-    openModal(`Ціна: ${svcName}`,`
-      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1rem">Майстер: <strong style="color:var(--gold2)">${esc(masterName)}</strong></p>
-      <div class="fg"><label>Ціна (текст)</label>
-        <input id="f-price" value="${esc(currentVal)}" placeholder="500 ₴ або 500-600 ₴ або від 4800 ₴">
-        <small>Залиште порожнім — ціна буде видалена</small>
-      </div>
-    `, async()=>{
-      const val = fv('f-price');
-      if (val) { await DB.upsertPrice(svcId, masterId, val); toast('Ціну збережено ✓'); }
-      else { await DB.deletePrice(svcId, masterId); toast('Ціну видалено'); }
-      S.prices = await DB.get('prices');
-      this.render();
-    });
-    setTimeout(()=>{
-      const inp=document.getElementById('f-price');
-      if(inp){ inp.focus(); inp.select(); }
-    },130);
-  }
-};
+        html += `</tbody></table></div>`;
+        wrap.innerHTML = html;
+      }
 
-// ── SCHEDULE ────────────────────────────────────────────────
-P.schedule = {
-  async load(){
-    S.sched = await DB.get('schedule');
-    this.render();
-  },
-  render(){
-    const card=document.getElementById('sched-card');
-    if (!S.sched.length){ card.innerHTML=`<div class="tbl-empty">Немає записів</div>`; return; }
-    card.innerHTML = S.sched.map(s=>`
-      <div class="schedule-row">
-        <span class="schedule-day">${esc(s.day_label)}</span>
-        <span class="schedule-time">${(s.open_time||'').slice(0,5)}</span>
-        <span style="color:var(--text3)">—</span>
-        <span class="schedule-time">${(s.close_time||'').slice(0,5)}</span>
-        <div class="acts">
-          <button class="icon-btn" onclick="P.sched.edit(${s.id})">${EDIT_ICO}</button>
-          <button class="icon-btn del" onclick="P.sched.del(${s.id})">${DEL_ICO}</button>
+      // ── Edit price cell ──────────────────────────────────────────
+      function editPrice(svcId, masterId, cur, svcName, masterName) {
+        modal(
+          `Ціна: ${svcName}`,
+          `
+    <p style="font-size:.8rem;color:var(--t2);margin-bottom:1rem">
+      Майстер: <strong style="color:var(--gold2)">${esc(masterName)}</strong>
+    </p>
+    <div class="fg">
+      <label>Ціна</label>
+      <input id="f-price" value="${esc(cur)}" placeholder="500 ₴   або   500-600 ₴   або   від 4800 ₴">
+      <small>Залиште порожнім щоб видалити ціну</small>
+    </div>
+  `,
+          async () => {
+            const val = fv("f-price");
+            if (val) await DB.upsertPrice(svcId, masterId, val);
+            else await DB.delPrice(svcId, masterId);
+            toast(val ? "Ціну збережено ✓" : "Ціну видалено");
+            S.prices = await DB.all("prices");
+            renderPriceTable(activeCatId);
+          },
+        );
+        setTimeout(() => {
+          const inp = document.getElementById("f-price");
+          inp?.focus();
+          inp?.select();
+        }, 120);
+      }
+
+      // ── Service CRUD ─────────────────────────────────────────────
+      function addSvc(catId, isHeader = false) {
+        modal(
+          isHeader ? "Новий заголовок" : "Нова послуга",
+          `
+    <div class="fg">
+      <label>${isHeader ? "Назва заголовку *" : "Назва послуги *"}</label>
+      <input id="f-name" placeholder="${isHeader ? "Наприклад: Стрижка" : "Наприклад: Густе волосся"}">
+    </div>
+    <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="99" min="0"></div>
+  `,
+          async () => {
+            const row = {
+              category_id: catId,
+              name: fv("f-name"),
+              is_header: isHeader,
+              position: fn("f-pos"),
+            };
+            if (!row.name) throw new Error("Введіть назву");
+            await DB.ins("services", row);
+            toast("Додано ✓");
+            S.svcs = await DB.all("services");
+            renderPriceTable(catId);
+          },
+        );
+      }
+
+      function editSvc(id) {
+        const s = S.svcs.find((x) => x.id === id);
+        if (!s) return;
+        modal(
+          s.is_header ? "Редагувати заголовок" : "Редагувати послугу",
+          `
+    <div class="fg"><label>Назва *</label><input id="f-name" value="${esc(s.name)}"></div>
+    <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position || 0}" min="0"></div>
+  `,
+          async () => {
+            await DB.upd("services", id, {
+              name: fv("f-name"),
+              position: fn("f-pos"),
+            });
+            toast("Збережено ✓");
+            S.svcs = await DB.all("services");
+            renderPriceTable(activeCatId);
+          },
+        );
+      }
+
+      async function delSvc(id) {
+        if (!confirm("Видалити послугу? Ціни теж будуть видалені.")) return;
+        await DB.del("services", id);
+        toast("Видалено");
+        S.svcs = await DB.all("services");
+        S.prices = await DB.all("prices");
+        renderPriceTable(activeCatId);
+      }
+
+      // ── Category masters sidebar ─────────────────────────────────
+      function renderCatMasters(catId) {
+        const el = document.getElementById("cat-masters-list");
+        const catMasters = S.masters.filter((m) => m.category_id === catId);
+
+        if (!catMasters.length) {
+          el.innerHTML = `<div class="svc-empty">Немає майстрів.<br>Натисніть «+ Майстер»</div>`;
+          return;
+        }
+        el.innerHTML = catMasters
+          .map(
+            (m) => `
+    <div class="master-row">
+      ${avaEl(m.avatar, m.name)}
+      <div class="master-info">
+        <div class="master-name">
+          ${esc(m.name)}
+          ${m.role === "Топ-майстер" ? `<span class="badge-top">★ Топ</span>` : ""}
         </div>
-      </div>`).join('');
-  },
-  openForm(s={}){
-    const isEdit=!!s.id;
-    openModal(isEdit?'Редагувати графік':'Новий рядок',`
-      <div class="fg"><label>Дні *</label><input id="f-day" value="${esc(s.day_label||'')}" placeholder="Понеділок – П'ятниця"></div>
-      <div class="fg2">
-        <div class="fg"><label>Відкриття *</label><input id="f-open" type="time" value="${s.open_time||'08:00'}"></div>
-        <div class="fg"><label>Закриття *</label><input id="f-close" type="time" value="${s.close_time||'20:00'}"></div>
+        <div class="master-role">${esc(m.role || "")}</div>
       </div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position||0}" min="0"></div>
-    `, async()=>{
-      const row={day_label:fv('f-day'),open_time:fv('f-open'),close_time:fv('f-close'),position:fn('f-pos')};
-      if (!row.day_label||!row.open_time||!row.close_time) throw new Error('Заповніть всі поля');
-      if (isEdit) await DB.upd('schedule',s.id,row); else await DB.ins('schedule',row);
-      toast(isEdit?'Збережено ✓':'Додано ✓');
-      await this.load();
-    });
-  },
-  edit(id){ this.openForm(S.sched.find(r=>r.id===id)||{}); },
-  async del(id){
-    if (!confirm('Видалити цей рядок?')) return;
-    await DB.del('schedule',id); toast('Видалено'); await this.load();
-  }
-};
-P.sched = P.schedule;
+      <div style="display:flex;gap:.25rem">
+        <button class="ib" onclick="editMasterLocal(${m.id})">${EDIT_ICO}</button>
+        <button class="ib r" onclick="delMasterLocal(${m.id})">${DEL_ICO}</button>
+      </div>
+    </div>`,
+          )
+          .join("");
+      }
 
-// ── Export ───────────────────────────────────────────────────
-document.getElementById('export-btn').addEventListener('click', async()=>{
-  toast('Завантаження...');
-  const [categories, masters, services, prices, schedule] = await Promise.all([
-    DB.get('categories'), DB.get('masters'), DB.get('services'),
-    DB.get('prices'), DB.get('schedule'),
-  ]);
-  const json = JSON.stringify({ exported_at:new Date().toISOString(), categories, masters, services, prices, schedule }, null, 2);
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([json],{type:'application/json'}));
-  a.download = `milan_data_${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); toast('JSON завантажено ✓');
-});
+      function editMasterLocal(id) {
+        openMasterForm(S.masters.find((m) => m.id === id) || {}, activeCatId);
+      }
+      async function delMasterLocal(id) {
+        if (
+          !confirm("Видалити майстра? Ціни цього майстра теж будуть видалені.")
+        )
+          return;
+        await DB.del("masters", id);
+        toast("Видалено");
+        S.masters = await DB.all("masters");
+        S.prices = await DB.all("prices");
+        renderCatMasters(activeCatId);
+        renderPriceTable(activeCatId);
+      }
 
-// ── Init ─────────────────────────────────────────────────────
-showPanel('categories');
-</script>
-</body>
+      // ══════════════════════════════════════════════════════════════
+      // MASTERS — спільна форма
+      // ══════════════════════════════════════════════════════════════
+      function openMasterForm(m = {}, defaultCatId = null) {
+        const isEdit = !!m.id;
+        const catId = m.category_id || defaultCatId;
+        const catOpts = S.cats
+          .map(
+            (c) =>
+              `<option value="${c.id}" ${catId === c.id ? "selected" : ""}>${esc(c.name)}</option>`,
+          )
+          .join("");
+        modal(
+          isEdit ? "Редагувати майстра" : "Новий майстер",
+          `
+    <div class="fg"><label>Категорія *</label>
+      <select id="f-cat"><option value="">— оберіть —</option>${catOpts}</select>
+    </div>
+    <div class="fg"><label>Ім'я *</label><input id="f-name" value="${esc(m.name || "")}"></div>
+    <div class="fg"><label>Роль</label>
+      <select id="f-role">
+        <option value="Майстер" ${m.role !== "Топ-майстер" ? "selected" : ""}>Майстер</option>
+        <option value="Топ-майстер" ${m.role === "Топ-майстер" ? "selected" : ""}>Топ-майстер</option>
+      </select>
+    </div>
+    <div class="fg"><label>Шлях до фото</label>
+      <input id="f-ava" value="${esc(m.avatar || "")}" placeholder="images/team/name.jpg">
+      <small>Відносний шлях від кореня сайту</small>
+    </div>
+    <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${m.position || 0}" min="0"></div>
+  `,
+          async () => {
+            const row = {
+              category_id: fn("f-cat"),
+              name: fv("f-name"),
+              role: fv("f-role"),
+              avatar: fv("f-ava"),
+              position: fn("f-pos"),
+            };
+            if (!row.category_id || !row.name)
+              throw new Error("Заповніть категорію та ім'я");
+            if (isEdit) await DB.upd("masters", m.id, row);
+            else await DB.ins("masters", row);
+            toast(isEdit ? "Збережено ✓" : "Майстра додано ✓");
+            S.masters = await DB.all("masters");
+            // Refresh wherever we are
+            if (
+              document.getElementById("pg-cat").classList.contains("active")
+            ) {
+              renderCatMasters(activeCatId);
+              S.prices = await DB.all("prices");
+              renderPriceTable(activeCatId);
+            }
+            if (
+              document.getElementById("pg-masters").classList.contains("active")
+            ) {
+              renderAllMasters();
+            }
+          },
+        );
+      }
+
+      // ── All masters page ─────────────────────────────────────────
+      async function loadAllMasters() {
+        const el = document.getElementById("all-masters-list");
+        el.innerHTML = `<div class="loading"><div class="sp"></div></div>`;
+        [S.cats, S.masters] = await Promise.all([
+          DB.all("categories"),
+          DB.all("masters"),
+        ]);
+        renderAllMasters();
+      }
+
+      function renderAllMasters() {
+        const el = document.getElementById("all-masters-list");
+        if (!S.masters.length) {
+          el.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--t3)">Немає майстрів</div>`;
+          return;
+        }
+        let html = "";
+        S.cats.forEach((c) => {
+          const cm = S.masters.filter((m) => m.category_id === c.id);
+          if (!cm.length) return;
+          html += `<div class="blk" style="margin-bottom:1rem">
+      <div class="blk-hdr"><span class="blk-title">${esc(c.name)}</span></div>
+      <div>
+      ${cm
+        .map(
+          (m) => `
+        <div class="master-row">
+          ${avaEl(m.avatar, m.name)}
+          <div class="master-info">
+            <div class="master-name">${esc(m.name)}
+              ${m.role === "Топ-майстер" ? `<span class="badge-top">★ Топ</span>` : ""}
+            </div>
+            <div class="master-role">${esc(m.role || "")}</div>
+          </div>
+          <div style="display:flex;gap:.3rem">
+            <button class="ib" onclick="openMasterForm(S.masters.find(x=>x.id===${m.id})||{})">${EDIT_ICO}</button>
+            <button class="ib r" onclick="delMasterGlobal(${m.id})">${DEL_ICO}</button>
+          </div>
+        </div>`,
+        )
+        .join("")}
+      </div>
+    </div>`;
+        });
+        el.innerHTML = html;
+      }
+
+      async function delMasterGlobal(id) {
+        if (!confirm("Видалити майстра? Його ціни теж будуть видалені."))
+          return;
+        await DB.del("masters", id);
+        toast("Видалено");
+        S.masters = await DB.all("masters");
+        renderAllMasters();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      // SCHEDULE
+      // ══════════════════════════════════════════════════════════════
+      async function loadSched() {
+        const el = document.getElementById("sched-list");
+        S.sched = await DB.all("schedule");
+        renderSched();
+      }
+
+      function renderSched() {
+        const el = document.getElementById("sched-list");
+        if (!S.sched.length) {
+          el.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--t3)">Немає записів</div>`;
+          return;
+        }
+        el.innerHTML = S.sched
+          .map(
+            (s) => `
+    <div class="sched-row">
+      <span class="sched-day">${esc(s.day_label)}</span>
+      <span class="sched-time">${(s.open_time || "").slice(0, 5)} – ${(s.close_time || "").slice(0, 5)}</span>
+      <div style="display:flex;gap:.3rem">
+        <button class="ib" onclick="editSched(${s.id})">${EDIT_ICO}</button>
+        <button class="ib r" onclick="delSched(${s.id})">${DEL_ICO}</button>
+      </div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      function openSchedForm(s = {}) {
+        const isEdit = !!s.id;
+        modal(
+          isEdit ? "Редагувати" : "Новий рядок",
+          `
+    <div class="fg"><label>Дні *</label>
+      <input id="f-day" value="${esc(s.day_label || "")}" placeholder="Понеділок – П'ятниця">
+    </div>
+    <div class="fg2">
+      <div class="fg"><label>Відкриття *</label><input id="f-o" type="time" value="${s.open_time || "08:00"}"></div>
+      <div class="fg"><label>Закриття *</label><input id="f-c" type="time" value="${s.close_time || "20:00"}"></div>
+    </div>
+  `,
+          async () => {
+            const row = {
+              day_label: fv("f-day"),
+              open_time: fv("f-o"),
+              close_time: fv("f-c"),
+              position: s.position || 0,
+            };
+            if (!row.day_label) throw new Error("Введіть дні");
+            if (isEdit) await DB.upd("schedule", s.id, row);
+            else await DB.ins("schedule", row);
+            toast(isEdit ? "Збережено ✓" : "Додано ✓");
+            S.sched = await DB.all("schedule");
+            renderSched();
+          },
+        );
+      }
+
+      function editSched(id) {
+        openSchedForm(S.sched.find((x) => x.id === id) || {});
+      }
+      async function delSched(id) {
+        if (!confirm("Видалити?")) return;
+        await DB.del("schedule", id);
+        toast("Видалено");
+        S.sched = await DB.all("schedule");
+        renderSched();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      // EXPORT
+      // ══════════════════════════════════════════════════════════════
+      async function exportJSON() {
+        toast("Завантаження...");
+        const [cats, masters, svcs, prices, sched] = await Promise.all([
+          DB.all("categories"),
+          DB.all("masters"),
+          DB.all("services"),
+          DB.all("prices"),
+          DB.all("schedule"),
+        ]);
+        const json = JSON.stringify(
+          {
+            exported_at: new Date().toISOString(),
+            categories: cats,
+            masters,
+            services: svcs,
+            prices,
+            schedule: sched,
+          },
+          null,
+          2,
+        );
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(
+          new Blob([json], { type: "application/json" }),
+        );
+        a.download = `milan_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        toast("JSON завантажено ✓");
+      }
+
+      // ── Init ─────────────────────────────────────────────────────
+      loadHome();
+    </script>
+  </body>
 </html>
