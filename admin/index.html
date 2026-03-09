@@ -1,1529 +1,880 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="uk">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Адмін — Milan Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Manrope:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/png" href="admin/favicon.png" />
-    <style>
-      /* ── Variables ─────────────────────────────────────── */
-      :root {
-        --bg: #0c0b0a;
-        --bg-el: #141210;
-        --bg-card: #1a1816;
-        --bg-card2: #201e1b;
-        --text: #e8e4e0;
-        --text-muted: #9a948c;
-        --gold: #c9a962;
-        --gold-light: #e2c98a;
-        --gold-dim: rgba(201, 169, 98, 0.12);
-        --border: rgba(201, 169, 98, 0.14);
-        --border-h: rgba(201, 169, 98, 0.35);
-        --danger: #c0392b;
-        --danger-bg: rgba(192, 57, 43, 0.15);
-        --success-bg: rgba(39, 174, 96, 0.15);
-        --r: 10px;
-        --sw: 240px;
-        --tr: 0.2s ease;
-        --fd: "Cormorant Garamond", Georgia, serif;
-        --fb: "Manrope", system-ui, sans-serif;
-      }
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      html {
-        scroll-behavior: smooth;
-      }
-      body {
-        font-family: var(--fb);
-        font-size: 14px;
-        color: var(--text);
-        background: var(--bg);
-        min-height: 100vh;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milan Studio — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+:root{
+  --bg:#080807;--bg2:#0f0e0c;--bg3:#161410;--bg4:#1c1a16;
+  --glass:rgba(255,255,255,0.03);--glass2:rgba(255,255,255,0.06);
+  --gold:#c9a962;--gold2:#e2c98a;--gold3:#a8862e;
+  --goldbg:rgba(201,169,98,0.1);--goldbrd:rgba(201,169,98,0.18);--goldbrd2:rgba(201,169,98,0.4);
+  --text:#ede9e3;--text2:#b8b0a4;--text3:#756d62;
+  --danger:#e05555;--dangerbg:rgba(224,85,85,0.12);--dangerbrd:rgba(224,85,85,0.3);
+  --ok:#4caf7d;--okbg:rgba(76,175,125,0.12);--okbrd:rgba(76,175,125,0.3);
+  --r:12px;--r2:8px;--sw:260px;
+  --fd:"Cormorant Garamond",Georgia,serif;
+  --fb:"Manrope",system-ui,sans-serif;
+  --shadow:0 8px 32px rgba(0,0,0,0.5);
+  --shadow2:0 24px 64px rgba(0,0,0,0.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);font-size:14px;color:var(--text);background:var(--bg);min-height:100vh;overflow-x:hidden}
 
-      /* ── Layout ─────────────────────────────────────────── */
-      .layout {
-        display: flex;
-        min-height: 100vh;
-      }
+/* ── Noise texture ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
 
-      /* ── Sidebar ────────────────────────────────────────── */
-      .sidebar {
-        width: var(--sw);
-        background: var(--bg-el);
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        z-index: 100;
-        overflow-y: auto;
-        transition: transform var(--tr);
-      }
-      .sidebar-logo {
-        padding: 1.5rem 1.25rem 1rem;
-        border-bottom: 1px solid var(--border);
-      }
-      .logo-milan {
-        font-family: var(--fd);
-        font-size: 1.4rem;
-        color: var(--gold);
-        letter-spacing: 0.05em;
-      }
-      .logo-studio {
-        font-size: 0.6rem;
-        letter-spacing: 0.3em;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        display: block;
-      }
-      .sb-nav {
-        flex: 1;
-        padding: 0.75rem 0;
-      }
-      .sb-section {
-        padding: 0.5rem 1rem 0.25rem;
-        font-size: 0.65rem;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        opacity: 0.6;
-      }
-      .sb-link {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.6rem 1.25rem;
-        color: var(--text-muted);
-        text-decoration: none;
-        font-size: 0.9rem;
-        border: none;
-        background: none;
-        width: 100%;
-        text-align: left;
-        cursor: pointer;
-        transition:
-          color var(--tr),
-          background var(--tr);
-      }
-      .sb-link:hover {
-        color: var(--gold-light);
-        background: var(--gold-dim);
-      }
-      .sb-link.active {
-        color: var(--gold);
-        background: var(--gold-dim);
-        border-left: 2px solid var(--gold);
-      }
-      .sb-link svg {
-        flex-shrink: 0;
-        opacity: 0.7;
-      }
-      .sb-link.active svg {
-        opacity: 1;
-      }
-      .sb-footer {
-        padding: 1rem 1.25rem;
-        border-top: 1px solid var(--border);
-      }
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
 
-      /* ── Main ───────────────────────────────────────────── */
-      .main {
-        margin-left: var(--sw);
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-      .topbar {
-        height: 56px;
-        background: var(--bg-el);
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 1.75rem;
-        position: sticky;
-        top: 0;
-        z-index: 50;
-      }
-      .topbar-title {
-        font-family: var(--fd);
-        font-size: 1.1rem;
-        color: var(--gold-light);
-      }
-      .content {
-        flex: 1;
-        padding: 1.75rem;
-        max-width: 1000px;
-      }
+/* ── Sidebar ── */
+.sb{
+  width:var(--sw);background:var(--bg2);
+  border-right:1px solid var(--goldbrd);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+  overflow-y:auto;transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.sb-top{padding:1.75rem 1.5rem 1.25rem;border-bottom:1px solid var(--goldbrd)}
+.sb-brand{display:flex;flex-direction:column;gap:2px}
+.sb-milan{font-family:var(--fd);font-size:1.6rem;font-weight:600;color:var(--gold);letter-spacing:.05em;line-height:1}
+.sb-studio{font-size:.58rem;letter-spacing:.35em;color:var(--text3);text-transform:uppercase}
+.sb-nav{flex:1;padding:.75rem 0;display:flex;flex-direction:column;gap:2px}
+.sb-sec{padding:.75rem 1.5rem .3rem;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text3)}
+.sb-btn{
+  display:flex;align-items:center;gap:.7rem;padding:.65rem 1.5rem;
+  color:var(--text2);background:none;border:none;width:100%;text-align:left;
+  cursor:pointer;font-family:var(--fb);font-size:.875rem;font-weight:400;
+  border-left:2px solid transparent;transition:all .18s ease;
+  border-radius:0;position:relative;
+}
+.sb-btn::after{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:0;background:var(--gold);transition:height .2s ease;border-radius:1px}
+.sb-btn:hover{color:var(--gold2);background:var(--goldbg)}
+.sb-btn.active{color:var(--gold);background:var(--goldbg)}
+.sb-btn.active::after{height:60%}
+.sb-btn svg{flex-shrink:0;opacity:.6;transition:opacity .18s}
+.sb-btn:hover svg,.sb-btn.active svg{opacity:1}
+.sb-foot{padding:1rem 1.5rem;border-top:1px solid var(--goldbrd)}
 
-      /* ── Panels ─────────────────────────────────────────── */
-      .panel {
-        display: none;
-      }
-      .panel.active {
-        display: block;
-      }
-      .panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1.25rem;
-        gap: 1rem;
-        flex-wrap: wrap;
-      }
-      .panel-title {
-        font-family: var(--fd);
-        font-size: 1.5rem;
-        color: var(--gold-light);
-      }
+/* ── Main ── */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  height:60px;background:rgba(15,14,12,0.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--goldbrd);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;position:sticky;top:0;z-index:50;
+}
+.topbar-left{display:flex;align-items:center;gap:1rem}
+.tb-title{font-family:var(--fd);font-size:1.15rem;color:var(--gold2);font-weight:500}
+.tb-user{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.4rem}
+.tb-dot{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.content{flex:1;padding:2rem;max-width:1100px}
 
-      /* ── Card / Table ───────────────────────────────────── */
-      .card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--r);
-        overflow: hidden;
-      }
-      .dtable {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .dtable th {
-        padding: 0.6rem 1rem;
-        text-align: left;
-        font-size: 0.7rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        background: var(--bg-el);
-        border-bottom: 1px solid var(--border);
-      }
-      .dtable td {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid rgba(201, 169, 98, 0.06);
-        vertical-align: middle;
-        font-size: 0.9rem;
-      }
-      .dtable tr:last-child td {
-        border-bottom: none;
-      }
-      .dtable tr:hover td {
-        background: rgba(201, 169, 98, 0.03);
-      }
-      .hdr-row td {
-        background: rgba(201, 169, 98, 0.05);
-        color: var(--gold);
-        font-size: 0.75rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .pos {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        background: var(--gold-dim);
-        border-radius: 50%;
-        font-size: 0.75rem;
-        color: var(--gold);
-        font-weight: 600;
-      }
+/* ── Panels ── */
+.panel{display:none;animation:fadeIn .25s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
+.ph-title{font-family:var(--fd);font-size:1.75rem;color:var(--gold2);font-weight:500}
 
-      /* ── Forms ──────────────────────────────────────────── */
-      .fg {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        margin-bottom: 1rem;
-      }
-      .fg label {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        font-weight: 500;
-      }
-      .fg input,
-      .fg textarea,
-      .fg select {
-        padding: 0.65rem 0.9rem;
-        background: var(--bg-el);
-        border: 1px solid var(--border);
-        border-radius: var(--r);
-        color: var(--text);
-        font-family: var(--fb);
-        font-size: 0.9rem;
-        transition:
-          border-color var(--tr),
-          box-shadow var(--tr);
-        width: 100%;
-      }
-      .fg input:focus,
-      .fg textarea:focus,
-      .fg select:focus {
-        outline: none;
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.1);
-      }
-      .fg select option {
-        background: var(--bg-card);
-      }
-      .fg small {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-      }
-      .fg-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
-      }
-      .fcheck {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        font-size: 0.9rem;
-        color: var(--text-muted);
-      }
-      .fcheck input {
-        width: 16px;
-        height: 16px;
-        accent-color: var(--gold);
-      }
+/* ── Card ── */
+.card{
+  background:var(--glass);
+  border:1px solid var(--goldbrd);
+  border-radius:var(--r);
+  overflow:hidden;
+  backdrop-filter:blur(4px);
+}
+.card-header{padding:.75rem 1.25rem;background:rgba(201,169,98,0.04);border-bottom:1px solid var(--goldbrd);display:flex;align-items:center;gap:.5rem}
+.card-header-title{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3)}
 
-      /* ── Modal ──────────────────────────────────────────── */
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition:
-          opacity 0.2s,
-          visibility 0.2s;
-      }
-      .overlay.open {
-        opacity: 1;
-        visibility: visible;
-      }
-      .modal {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.75rem;
-        width: 100%;
-        max-width: 480px;
-        max-height: 90vh;
-        overflow-y: auto;
-        transform: translateY(12px);
-        transition: transform 0.2s;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-      }
-      .overlay.open .modal {
-        transform: translateY(0);
-      }
-      .modal-hdr {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid var(--border);
-      }
-      .modal-title {
-        font-family: var(--fd);
-        font-size: 1.2rem;
-        color: var(--gold-light);
-      }
-      .modal-footer {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-        margin-top: 1.25rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--border);
-      }
+/* ── Table ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{
+  padding:.65rem 1rem;text-align:left;
+  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text3);background:rgba(0,0,0,0.2);
+  border-bottom:1px solid var(--goldbrd);font-weight:500;
+}
+.tbl td{padding:.8rem 1rem;border-bottom:1px solid rgba(201,169,98,0.05);vertical-align:middle;font-size:.875rem;transition:background .15s}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:rgba(201,169,98,0.04)}
+.tbl-empty{text-align:center;padding:3.5rem 1rem;color:var(--text3)}
+.tbl-loading{text-align:center;padding:3rem 1rem}
 
-      /* ── Buttons ────────────────────────────────────────── */
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.55rem 1.1rem;
-        border-radius: var(--r);
-        font-family: var(--fb);
-        font-size: 0.85rem;
-        font-weight: 500;
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: all var(--tr);
-        text-decoration: none;
-        white-space: nowrap;
-      }
-      .btn-p {
-        background: linear-gradient(135deg, var(--gold), #a8862e);
-        color: #1a1511;
-      }
-      .btn-p:hover:not(:disabled) {
-        filter: brightness(1.1);
-        transform: translateY(-1px);
-      }
-      .btn-s {
-        background: var(--bg-el);
-        color: var(--text-muted);
-        border-color: var(--border);
-      }
-      .btn-s:hover {
-        color: var(--text);
-        border-color: var(--border-h);
-      }
-      .btn-d {
-        background: var(--danger-bg);
-        color: #e07070;
-        border-color: rgba(192, 57, 43, 0.25);
-      }
-      .btn-d:hover {
-        background: rgba(192, 57, 43, 0.25);
-      }
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .ico {
-        padding: 0.4rem;
-        background: none;
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        border-radius: var(--r);
-        cursor: pointer;
-        transition: all var(--tr);
-        line-height: 0;
-      }
-      .ico:hover {
-        color: var(--gold);
-        border-color: var(--border-h);
-      }
-      .ico.d:hover {
-        color: #e07070;
-        border-color: rgba(192, 57, 43, 0.4);
-      }
-      .acts {
-        display: flex;
-        gap: 0.35rem;
-      }
+/* ── Price grid table ── */
+.price-grid{width:100%;border-collapse:collapse}
+.price-grid th{
+  padding:.65rem .9rem;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);background:rgba(0,0,0,0.2);border-bottom:1px solid var(--goldbrd);
+  text-align:center;font-weight:500;
+}
+.price-grid th:first-child{text-align:left}
+.price-grid td{padding:.6rem .9rem;border-bottom:1px solid rgba(201,169,98,0.05);vertical-align:middle;font-size:.875rem}
+.price-grid tr:last-child td{border-bottom:none}
+.price-grid tbody tr:hover td{background:rgba(201,169,98,0.04)}
+.price-cell{
+  text-align:center;min-width:120px;
+}
+.price-val{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:.3rem .6rem;background:var(--goldbg);
+  border:1px solid var(--goldbrd);border-radius:6px;
+  color:var(--gold2);font-size:.8rem;font-weight:500;cursor:pointer;
+  transition:all .18s;min-width:80px;
+}
+.price-val:hover{background:rgba(201,169,98,0.18);border-color:var(--goldbrd2)}
+.price-empty{color:var(--text3);font-size:.8rem;text-align:center;cursor:pointer;opacity:.5;transition:opacity .15s}
+.price-empty:hover{opacity:1}
+.master-head{display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:.25rem 0}
+.master-ava{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--goldbrd)}
+.master-ava-ph{width:32px;height:32px;border-radius:50%;background:var(--goldbg);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.8rem;font-weight:700;border:1px solid var(--goldbrd);flex-shrink:0}
 
-      /* ── Toast ──────────────────────────────────────────── */
-      #toasts {
-        position: fixed;
-        bottom: 1.5rem;
-        right: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        z-index: 9999;
-      }
-      .toast {
-        padding: 0.75rem 1.1rem;
-        border-radius: var(--r);
-        font-size: 0.875rem;
-        min-width: 220px;
-        animation: tin 0.3s ease;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      }
-      .toast.ok {
-        background: var(--success-bg);
-        color: #6dd49a;
-        border: 1px solid rgba(39, 174, 96, 0.3);
-      }
-      .toast.err {
-        background: var(--danger-bg);
-        color: #e07070;
-        border: 1px solid rgba(192, 57, 43, 0.3);
-      }
-      @keyframes tin {
-        from {
-          opacity: 0;
-          transform: translateX(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
+/* ── Category tabs ── */
+.cat-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.cat-tab{
+  padding:.4rem 1rem;border:1px solid var(--goldbrd);border-radius:99px;
+  font-size:.8rem;color:var(--text2);cursor:pointer;background:none;
+  font-family:var(--fb);transition:all .18s;
+}
+.cat-tab:hover{color:var(--gold2);border-color:var(--goldbrd2)}
+.cat-tab.active{background:var(--goldbg);color:var(--gold);border-color:var(--gold)}
 
-      /* ── Loading / Empty ────────────────────────────────── */
-      .loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 3rem;
-        color: var(--text-muted);
-        gap: 0.75rem;
-      }
-      .spin {
-        width: 20px;
-        height: 20px;
-        border: 2px solid var(--border);
-        border-top-color: var(--gold);
-        border-radius: 50%;
-        animation: sp 0.8s linear infinite;
-      }
-      @keyframes sp {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      .empty {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: var(--text-muted);
-      }
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:.2rem .55rem;border-radius:99px;font-size:.7rem;font-weight:600;letter-spacing:.04em}
+.badge-top{background:rgba(201,169,98,0.15);color:var(--gold2);border:1px solid rgba(201,169,98,0.3)}
+.badge-master{background:rgba(178,178,178,0.1);color:#ccc;border:1px solid rgba(178,178,178,0.2)}
+.pos-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--goldbg);border-radius:50%;font-size:.7rem;color:var(--gold);font-weight:700;border:1px solid var(--goldbrd)}
 
-      /* ── Scrollbar ──────────────────────────────────────── */
-      ::-webkit-scrollbar {
-        width: 5px;
-      }
-      ::-webkit-scrollbar-track {
-        background: var(--bg);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: rgba(201, 169, 98, 0.2);
-        border-radius: 99px;
-      }
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.1rem;border-radius:var(--r2);font-family:var(--fb);font-size:.825rem;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .18s;text-decoration:none;white-space:nowrap;line-height:1.4}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold3) 100%);color:#1a1511;border-color:transparent}
+.btn-gold:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 16px rgba(201,169,98,0.3)}
+.btn-ghost{background:var(--glass2);color:var(--text2);border-color:var(--goldbrd)}
+.btn-ghost:hover:not(:disabled){color:var(--gold2);border-color:var(--goldbrd2);background:var(--goldbg)}
+.btn-danger{background:var(--dangerbg);color:var(--danger);border-color:var(--dangerbrd)}
+.btn-danger:hover:not(:disabled){background:rgba(224,85,85,0.2)}
+.icon-btn{padding:.4rem;background:var(--glass);border:1px solid var(--goldbrd);color:var(--text2);border-radius:var(--r2);cursor:pointer;transition:all .18s;line-height:0;display:inline-flex}
+.icon-btn:hover{color:var(--gold);border-color:var(--goldbrd2);background:var(--goldbg)}
+.icon-btn.del:hover{color:var(--danger);border-color:var(--dangerbrd);background:var(--dangerbg)}
+.acts{display:flex;gap:.3rem;align-items:center}
 
-      /* ── Mobile ─────────────────────────────────────────── */
-      @media (max-width: 768px) {
-        .sidebar {
-          transform: translateX(-100%);
-        }
-        .sidebar.open {
-          transform: translateX(0);
-        }
-        .main {
-          margin-left: 0;
-        }
-        .topbar {
-          padding: 0 1rem;
-        }
-        .content {
-          padding: 1rem;
-        }
-        .fg-row {
-          grid-template-columns: 1fr;
-        }
-        #burger {
-          display: flex !important;
-        }
-      }
-      #burger {
-        display: none;
-        padding: 0.4rem;
-        background: none;
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        border-radius: var(--r);
-        cursor: pointer;
-        line-height: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="layout">
-      <!-- ══ SIDEBAR ═══════════════════════════════════════════ -->
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-          <a href="/" style="text-decoration: none">
-            <span class="logo-milan">Milan</span>
-            <span class="logo-studio">STUDIO</span>
-          </a>
-        </div>
-        <nav class="sb-nav">
-          <div class="sb-section">Контент</div>
-          <button class="sb-link" data-panel="categories">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-            <span>Категорії</span>
-          </button>
-          <button class="sb-link" data-panel="services">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <line x1="8" y1="6" x2="21" y2="6" />
-              <line x1="8" y1="12" x2="21" y2="12" />
-              <line x1="8" y1="18" x2="21" y2="18" />
-              <circle cx="3" cy="6" r="1" />
-              <circle cx="3" cy="12" r="1" />
-              <circle cx="3" cy="18" r="1" />
-            </svg>
-            <span>Послуги</span>
-          </button>
-          <button class="sb-link" data-panel="prices">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6" />
-            </svg>
-            <span>Прайс</span>
-          </button>
-          <button class="sb-link" data-panel="masters">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            <span>Майстри</span>
-          </button>
-          <button class="sb-link" data-panel="schedule">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            <span>Графік роботи</span>
-          </button>
-          <div class="sb-section" style="margin-top: 0.5rem">Інструменти</div>
-          <button class="sb-link" id="export-btn">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>Експорт JSON</span>
-          </button>
-        </nav>
-        <div class="sb-footer">
-          <button class="sb-link" id="logout-btn" style="color: var(--danger)">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            <span>Вийти</span>
-          </button>
-        </div>
-      </aside>
+/* ── Forms ── */
+.fg{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
+.fg label{font-size:.75rem;color:var(--text2);font-weight:500;letter-spacing:.03em}
+.fg input,.fg textarea,.fg select{
+  padding:.6rem .85rem;background:rgba(0,0,0,0.3);
+  border:1px solid var(--goldbrd);border-radius:var(--r2);
+  color:var(--text);font-family:var(--fb);font-size:.875rem;
+  transition:border-color .18s,box-shadow .18s;width:100%;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{
+  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,169,98,0.08)
+}
+.fg select option{background:var(--bg3)}
+.fg small{font-size:.7rem;color:var(--text3)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 
-      <!-- ══ MAIN ═══════════════════════════════════════════════ -->
-      <div class="main">
-        <div class="topbar">
-          <button id="burger">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <span class="topbar-title" id="topbar-title">Категорії</span>
-          <span
-            style="font-size: 0.75rem; color: var(--text-muted)"
-            id="topbar-user"
-          ></span>
-        </div>
+/* ── Modal ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s;backdrop-filter:blur(4px)}
+.overlay.open{opacity:1;visibility:visible}
+.modal{
+  background:var(--bg3);border:1px solid var(--goldbrd);border-radius:16px;
+  padding:2rem;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;
+  transform:translateY(16px) scale(.98);transition:transform .22s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--shadow2);
+}
+.overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--goldbrd)}
+.modal-title{font-family:var(--fd);font-size:1.3rem;color:var(--gold2);font-weight:500}
+.modal-foot{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--goldbrd)}
 
-        <div class="content">
-          <!-- CATEGORIES -->
-          <div class="panel" id="panel-categories">
-            <div class="panel-header">
-              <h2 class="panel-title">Категорії послуг</h2>
-              <button class="btn btn-p" onclick="P.categories.openForm()">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Нова категорія
-              </button>
-            </div>
-            <div class="card">
-              <table class="dtable">
-                <thead>
-                  <tr>
-                    <th style="width: 50px">#</th>
-                    <th>Назва</th>
-                    <th>Slug</th>
-                    <th style="width: 90px">Дії</th>
-                  </tr>
-                </thead>
-                <tbody id="tb-categories">
-                  <tr>
-                    <td colspan="4">
-                      <div class="loading"><div class="spin"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+/* ── Price edit modal ── */
+.price-edit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;margin-top:.75rem}
+.price-master-block{background:rgba(0,0,0,0.2);border:1px solid var(--goldbrd);border-radius:var(--r2);padding:.75rem}
+.price-master-name{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text2);margin-bottom:.5rem;font-weight:500}
 
-          <!-- SERVICES -->
-          <div class="panel" id="panel-services">
-            <div class="panel-header">
-              <h2 class="panel-title">Послуги</h2>
-              <div
-                style="
-                  display: flex;
-                  gap: 0.5rem;
-                  flex-wrap: wrap;
-                  align-items: center;
-                "
-              >
-                <select
-                  id="svc-cat-filter"
-                  style="
-                    padding: 0.5rem 0.75rem;
-                    background: var(--bg-el);
-                    border: 1px solid var(--border);
-                    border-radius: var(--r);
-                    color: var(--text);
-                    font-size: 0.85rem;
-                  "
-                ></select>
-                <button class="btn btn-p" onclick="P.services.openForm()">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                  >
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  Нова послуга
-                </button>
-              </div>
-            </div>
-            <div class="card">
-              <table class="dtable">
-                <thead>
-                  <tr>
-                    <th style="width: 50px">#</th>
-                    <th>Назва</th>
-                    <th>Категорія</th>
-                    <th style="width: 90px">Дії</th>
-                  </tr>
-                </thead>
-                <tbody id="tb-services">
-                  <tr>
-                    <td colspan="4">
-                      <div class="loading"><div class="spin"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+/* ── Toast ── */
+#toasts{position:fixed;bottom:1.75rem;right:1.75rem;display:flex;flex-direction:column;gap:.5rem;z-index:9999;pointer-events:none}
+.toast{
+  padding:.75rem 1.1rem;border-radius:var(--r2);font-size:.825rem;
+  min-width:220px;max-width:340px;pointer-events:auto;
+  animation:toastIn .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:.5rem;
+}
+.toast.ok{background:var(--okbg);color:#7dd4a8;border:1px solid var(--okbrd)}
+.toast.err{background:var(--dangerbg);color:#e88;border:1px solid var(--dangerbrd)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
-          <!-- PRICES -->
-          <div class="panel" id="panel-prices">
-            <div class="panel-header">
-              <h2 class="panel-title">Прайс</h2>
-              <button class="btn btn-p" onclick="P.prices.openForm()">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Нова ціна
-              </button>
-            </div>
-            <div class="card">
-              <table class="dtable">
-                <thead>
-                  <tr>
-                    <th>Послуга</th>
-                    <th>Майстер</th>
-                    <th>Ціна</th>
-                    <th style="width: 90px">Дії</th>
-                  </tr>
-                </thead>
-                <tbody id="tb-prices">
-                  <tr>
-                    <td colspan="4">
-                      <div class="loading"><div class="spin"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+/* ── Spinner ── */
+.spin{width:20px;height:20px;border:2px solid var(--goldbrd);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
 
-          <!-- MASTERS -->
-          <div class="panel" id="panel-masters">
-            <div class="panel-header">
-              <h2 class="panel-title">Майстри</h2>
-              <button class="btn btn-p" onclick="P.masters.openForm()">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Новий майстер
-              </button>
-            </div>
-            <div class="card">
-              <table class="dtable">
-                <thead>
-                  <tr>
-                    <th style="width: 50px">Фото</th>
-                    <th>Ім'я</th>
-                    <th>Роль</th>
-                    <th style="width: 90px">Дії</th>
-                  </tr>
-                </thead>
-                <tbody id="tb-masters">
-                  <tr>
-                    <td colspan="4">
-                      <div class="loading"><div class="spin"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+/* ── Avatar ── */
+.ava{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--goldbrd)}
+.ava-ph{width:36px;height:36px;border-radius:50%;background:var(--goldbg);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:.9rem;font-weight:700;border:1px solid var(--goldbrd)}
 
-          <!-- SCHEDULE -->
-          <div class="panel" id="panel-schedule">
-            <div class="panel-header">
-              <h2 class="panel-title">Графік роботи</h2>
-              <button class="btn btn-p" onclick="P.schedule.openForm()">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Додати рядок
-              </button>
-            </div>
-            <div class="card">
-              <table class="dtable">
-                <thead>
-                  <tr>
-                    <th>Дні</th>
-                    <th>Відкриття</th>
-                    <th>Закриття</th>
-                    <th style="width: 90px">Дії</th>
-                  </tr>
-                </thead>
-                <tbody id="tb-schedule">
-                  <tr>
-                    <td colspan="4">
-                      <div class="loading"><div class="spin"></div></div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+/* ── Drag handle ── */
+.drag-handle{cursor:grab;color:var(--text3);transition:color .15s;padding:.2rem}
+.drag-handle:hover{color:var(--gold2)}
+tr.dragging{opacity:.5;background:var(--goldbg)!important}
+tr.drag-over td{border-top:2px solid var(--gold)!important}
+
+/* ── Schedule ── */
+.schedule-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid rgba(201,169,98,0.05)}
+.schedule-row:last-child{border-bottom:none}
+.schedule-day{font-size:.875rem;color:var(--text)}
+.schedule-time{color:var(--gold);font-size:.875rem;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(201,169,98,0.2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:rgba(201,169,98,0.4)}
+
+/* ── Mobile ── */
+#burger{display:none}
+@media(max-width:900px){
+  .sb{transform:translateX(-100%)}
+  .sb.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar,.content{padding-left:1rem;padding-right:1rem}
+  #burger{display:flex;padding:.4rem;background:var(--glass);border:1px solid var(--goldbrd);color:var(--text2);border-radius:var(--r2);cursor:pointer;line-height:0}
+  .fg2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+<aside class="sb" id="sb">
+  <div class="sb-top">
+    <a href="/" style="text-decoration:none" class="sb-brand">
+      <span class="sb-milan">Milan</span>
+      <span class="sb-studio">Beauty Studio</span>
+    </a>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Контент</div>
+    <button class="sb-btn" data-p="categories">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Категорії</span>
+    </button>
+    <button class="sb-btn" data-p="masters">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Майстри</span>
+    </button>
+    <button class="sb-btn" data-p="services">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+      <span>Послуги</span>
+    </button>
+    <button class="sb-btn" data-p="prices">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+      <span>Прайс</span>
+    </button>
+    <button class="sb-btn" data-p="schedule">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="14" x2="16" y2="14" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Графік роботи</span>
+    </button>
+    <div class="sb-sec" style="margin-top:.5rem">Інструменти</div>
+    <button class="sb-btn" id="export-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Експорт JSON</span>
+    </button>
+  </nav>
+  <div class="sb-foot">
+    <button class="sb-btn" id="logout-btn" style="color:var(--danger)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Вийти</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button id="burger">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="tb-title" id="tb-title">Категорії</span>
+    </div>
+    <div class="tb-user">
+      <span class="tb-dot"></span>
+      <span id="tb-email"></span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- CATEGORIES -->
+    <div class="panel" id="p-categories">
+      <div class="ph">
+        <h2 class="ph-title">Категорії послуг</h2>
+        <button class="btn btn-gold" onclick="P.cats.openForm()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Нова категорія
+        </button>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th style="width:44px"></th><th style="width:44px">#</th><th>Назва</th><th>Slug</th><th style="width:90px">Дії</th></tr></thead>
+          <tbody id="tb-cats"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- ══ MODAL ══════════════════════════════════════════════════ -->
-    <div class="overlay" id="overlay">
-      <div class="modal">
-        <div class="modal-hdr">
-          <span class="modal-title" id="modal-title">Редагувати</span>
-          <button class="ico" onclick="closeModal()">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-        <div id="modal-body"></div>
-        <div class="modal-footer">
-          <button class="btn btn-s" onclick="closeModal()">Скасувати</button>
-          <button class="btn btn-p" id="save-btn" onclick="saveModal()">
-            Зберегти
-          </button>
-        </div>
+    <!-- MASTERS -->
+    <div class="panel" id="p-masters">
+      <div class="ph">
+        <h2 class="ph-title">Майстри</h2>
+        <button class="btn btn-gold" onclick="P.masters.openForm()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Новий майстер
+        </button>
+      </div>
+      <div id="cat-tabs-masters" class="cat-tabs"></div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th style="width:44px"></th><th style="width:50px">Фото</th><th>Ім'я</th><th>Роль</th><th>Категорія</th><th style="width:90px">Дії</th></tr></thead>
+          <tbody id="tb-masters"></tbody>
+        </table>
       </div>
     </div>
 
-    <div id="toasts"></div>
+    <!-- SERVICES -->
+    <div class="panel" id="p-services">
+      <div class="ph">
+        <h2 class="ph-title">Послуги</h2>
+        <button class="btn btn-gold" onclick="P.svcs.openForm()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Нова послуга
+        </button>
+      </div>
+      <div id="cat-tabs-svcs" class="cat-tabs"></div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th style="width:44px"></th><th style="width:44px">#</th><th>Послуга</th><th>Категорія</th><th style="width:90px">Дії</th></tr></thead>
+          <tbody id="tb-svcs"></tbody>
+        </table>
+      </div>
+    </div>
 
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="config.js"></script>
-    <script>
-      "use strict";
+    <!-- PRICES -->
+    <div class="panel" id="p-prices">
+      <div class="ph">
+        <h2 class="ph-title">Прайс</h2>
+      </div>
+      <div id="cat-tabs-prices" class="cat-tabs"></div>
+      <div class="card" id="price-card">
+        <div class="tbl-loading"><div class="spin"></div></div>
+      </div>
+    </div>
 
-      // ── Supabase client ─────────────────────────────────────────
-      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- SCHEDULE -->
+    <div class="panel" id="p-schedule">
+      <div class="ph">
+        <h2 class="ph-title">Графік роботи</h2>
+        <button class="btn btn-gold" onclick="P.sched.openForm()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Додати
+        </button>
+      </div>
+      <div class="card" id="sched-card"></div>
+    </div>
 
-      // ── Auth guard ──────────────────────────────────────────────
-      (async () => {
-        const { data } = await sb.auth.getSession();
-        if (!data.session) {
-          window.location.href = "login.html";
-          return;
-        }
-        document.getElementById("topbar-user").textContent =
-          data.session.user.email;
-      })();
+  </div>
+</div>
+</div>
 
-      document.getElementById("logout-btn").onclick = async () => {
-        await sb.auth.signOut();
-        window.location.href = "login.html";
-      };
+<!-- ══ MODAL ═════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="m-title">Редагувати</span>
+      <button class="icon-btn" onclick="closeModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="m-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Скасувати</button>
+      <button class="btn btn-gold" id="m-save" onclick="saveModal()">Зберегти</button>
+    </div>
+  </div>
+</div>
 
-      // ── DB helpers ──────────────────────────────────────────────
-      const DB = {
-        async get(table, match = {}) {
-          let q = sb.from(table).select("*").order("position").order("id");
-          Object.entries(match).forEach(([k, v]) => {
-            q = q.eq(k, v);
-          });
-          const { data, error } = await q;
-          if (error) throw new Error(error.message);
-          return data || [];
-        },
-        async insert(table, row) {
-          const { data, error } = await sb
-            .from(table)
-            .insert(row)
-            .select()
-            .single();
-          if (error) throw new Error(error.message);
-          return data;
-        },
-        async update(table, id, row) {
-          const { error } = await sb.from(table).update(row).eq("id", id);
-          if (error) throw new Error(error.message);
-        },
-        async remove(table, id) {
-          const { error } = await sb.from(table).delete().eq("id", id);
-          if (error) throw new Error(error.message);
-        },
-      };
+<div id="toasts"></div>
 
-      // ── Toast ───────────────────────────────────────────────────
-      function toast(msg, type = "ok") {
-        const el = document.createElement("div");
-        el.className = `toast ${type}`;
-        el.textContent = msg;
-        document.getElementById("toasts").appendChild(el);
-        setTimeout(() => el.remove(), 3500);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+'use strict';
+
+// ── Supabase ────────────────────────────────────────────────
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Auth guard ──────────────────────────────────────────────
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) { location.href = 'login.html'; return; }
+  document.getElementById('tb-email').textContent = data.session.user.email;
+})();
+document.getElementById('logout-btn').onclick = async () => {
+  await sb.auth.signOut(); location.href = 'login.html';
+};
+
+// ── DB ──────────────────────────────────────────────────────
+const DB = {
+  async get(table, match = {}, order = ['position','id']) {
+    let q = sb.from(table).select('*');
+    Object.entries(match).forEach(([k,v]) => { q = q.eq(k, v); });
+    order.forEach(o => { q = q.order(o); });
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    return data || [];
+  },
+  async ins(table, row) {
+    const { data, error } = await sb.from(table).insert(row).select().single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+  async upd(table, id, row) {
+    const { error } = await sb.from(table).update(row).eq('id', id);
+    if (error) throw new Error(error.message);
+  },
+  async del(table, id) {
+    const { error } = await sb.from(table).delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  },
+  async upsertPrice(serviceId, masterId, label) {
+    // Перевіряємо чи існує запис
+    const { data } = await sb.from('prices')
+      .select('id').eq('service_id', serviceId).eq('master_id', masterId).maybeSingle();
+    if (data) {
+      await sb.from('prices').update({ label }).eq('id', data.id);
+    } else {
+      await sb.from('prices').insert({ service_id: serviceId, master_id: masterId, label });
+    }
+  },
+  async deletePrice(serviceId, masterId) {
+    await sb.from('prices').delete()
+      .eq('service_id', serviceId).eq('master_id', masterId);
+  }
+};
+
+// ── Toast ───────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${type==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg> ${msg}`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Modal ───────────────────────────────────────────────────
+let _onSave = null;
+function openModal(title, html, onSave) {
+  document.getElementById('m-title').textContent = title;
+  document.getElementById('m-body').innerHTML = html;
+  _onSave = onSave;
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(() => { document.querySelector('#m-body input,#m-body select')?.focus(); }, 120);
+}
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  _onSave = null;
+}
+async function saveModal() {
+  if (!_onSave) return;
+  const btn = document.getElementById('m-save');
+  btn.disabled = true; btn.textContent = '...';
+  try { await _onSave(); closeModal(); }
+  catch(e) { toast(e.message || 'Помилка', 'err'); }
+  finally { btn.disabled = false; btn.textContent = 'Зберегти'; }
+}
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Helpers ─────────────────────────────────────────────────
+const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fv  = id => { const e=document.getElementById(id); if(!e)return null; const v=e.value.trim(); return v===''?null:v; };
+const fn  = id => { const v=fv(id); return v===null?null:Number(v); };
+
+function avatarEl(avatar, name, size=36) {
+  if (avatar) return `<img src="/${esc(avatar)}" class="ava" style="width:${size}px;height:${size}px" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="ava-ph" style="width:${size}px;height:${size}px;display:none">${esc(name[0])}</span>`;
+  return `<span class="ava-ph" style="width:${size}px;height:${size}px">${esc(name[0])}</span>`;
+}
+
+const DRAG_ICO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>`;
+const EDIT_ICO = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const DEL_ICO  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+
+// ── Drag & Drop for table rows ───────────────────────────────
+function initDrag(tbody, onReorder) {
+  let dragged = null;
+  tbody.querySelectorAll('tr').forEach(row => {
+    row.draggable = true;
+    row.addEventListener('dragstart', () => { dragged = row; row.classList.add('dragging'); });
+    row.addEventListener('dragend',   () => { dragged = null; row.classList.remove('dragging'); tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('drag-over')); });
+    row.addEventListener('dragover',  e => { e.preventDefault(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault(); row.classList.remove('drag-over');
+      if (dragged && dragged !== row) {
+        const rows = [...tbody.querySelectorAll('tr')];
+        const from = rows.indexOf(dragged), to = rows.indexOf(row);
+        if (from < to) tbody.insertBefore(dragged, row.nextSibling);
+        else tbody.insertBefore(dragged, row);
+        onReorder([...tbody.querySelectorAll('tr')].map(r => Number(r.dataset.id)));
       }
+    });
+  });
+}
 
-      // ── Modal ───────────────────────────────────────────────────
-      let _onSave = null;
+// ── Category tabs ────────────────────────────────────────────
+function renderCatTabs(containerId, cats, activeCatId, onSelect) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = cats.map(c =>
+    `<button class="cat-tab${c.id===activeCatId?' active':''}" data-cid="${c.id}">${esc(c.name)}</button>`
+  ).join('');
+  el.querySelectorAll('.cat-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect(Number(btn.dataset.cid));
+    });
+  });
+}
 
-      function openModal(title, html, onSave) {
-        document.getElementById("modal-title").textContent = title;
-        document.getElementById("modal-body").innerHTML = html;
-        _onSave = onSave;
-        document.getElementById("overlay").classList.add("open");
-        setTimeout(() => {
-          const f = document.querySelector(
-            "#modal-body input, #modal-body select",
-          );
-          if (f) f.focus();
-        }, 120);
-      }
+// ── Nav ─────────────────────────────────────────────────────
+const PANEL_NAMES = { categories:'Категорії', masters:'Майстри', services:'Послуги', prices:'Прайс', schedule:'Графік роботи' };
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-btn[data-p]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('p-'+id)?.classList.add('active');
+  document.querySelector(`.sb-btn[data-p="${id}"]`)?.classList.add('active');
+  document.getElementById('tb-title').textContent = PANEL_NAMES[id] || '';
+  document.getElementById('sb').classList.remove('open');
+  P[id]?.load?.();
+}
+document.querySelectorAll('.sb-btn[data-p]').forEach(b => b.addEventListener('click', ()=>showPanel(b.dataset.p)));
+document.getElementById('burger').addEventListener('click', ()=>document.getElementById('sb').classList.toggle('open'));
 
-      function closeModal() {
-        document.getElementById("overlay").classList.remove("open");
-        _onSave = null;
-      }
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+const S = { cats:[], masters:[], svcs:[], prices:[], sched:[] };
+let activePriceCat = null, activeMasterCat = null, activeSvcCat = null;
 
-      async function saveModal() {
-        if (!_onSave) return;
-        const btn = document.getElementById("save-btn");
-        btn.disabled = true;
-        btn.textContent = "Збереження...";
-        try {
-          await _onSave();
-          closeModal();
-        } catch (e) {
-          toast(e.message || "Помилка", "err");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Зберегти";
-        }
-      }
+// ══════════════════════════════════════════════════════════════
+// PANELS
+// ══════════════════════════════════════════════════════════════
+const P = {};
 
-      document.getElementById("overlay").addEventListener("click", (e) => {
-        if (e.target === document.getElementById("overlay")) closeModal();
-      });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeModal();
-      });
+// ── CATEGORIES ──────────────────────────────────────────────
+P.categories = {
+  async load() {
+    S.cats = await DB.get('categories');
+    this.render();
+  },
+  render() {
+    const tb = document.getElementById('tb-cats');
+    if (!S.cats.length) { tb.innerHTML = `<tr><td colspan="5" class="tbl-empty">Немає категорій</td></tr>`; return; }
+    tb.innerHTML = S.cats.map(c=>`
+      <tr data-id="${c.id}">
+        <td><span class="drag-handle">${DRAG_ICO}</span></td>
+        <td><span class="pos-num">${c.position}</span></td>
+        <td>${esc(c.name)}</td>
+        <td><code style="font-size:.75rem;color:var(--text3)">${esc(c.slug)}</code></td>
+        <td><div class="acts">
+          <button class="icon-btn" onclick="P.categories.edit(${c.id})">${EDIT_ICO}</button>
+          <button class="icon-btn del" onclick="P.categories.del(${c.id})">${DEL_ICO}</button>
+        </div></td>
+      </tr>`).join('');
+    initDrag(tb, async ids => {
+      for (let i=0;i<ids.length;i++) await DB.upd('categories',ids[i],{position:i+1});
+      S.cats = await DB.get('categories'); toast('Порядок збережено ✓');
+    });
+  },
+  openForm(c={}) {
+    const isEdit = !!c.id;
+    openModal(isEdit?'Редагувати категорію':'Нова категорія',`
+      <div class="fg"><label>Назва *</label><input id="f-name" value="${esc(c.name||'')}"></div>
+      <div class="fg"><label>Slug *</label><input id="f-slug" value="${esc(c.slug||'')}" placeholder="hair"></div>
+      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${c.position||0}" min="0"></div>
+    `, async () => {
+      const row = { name:fv('f-name'), slug:fv('f-slug'), position:fn('f-pos') };
+      if (!row.name||!row.slug) throw new Error('Заповніть назву та slug');
+      if (isEdit) await DB.upd('categories',c.id,row); else await DB.ins('categories',row);
+      toast(isEdit?'Збережено ✓':'Категорію створено ✓');
+      await this.load();
+    });
+    if (!isEdit) setTimeout(()=>{
+      const ni=document.getElementById('f-name'), si=document.getElementById('f-slug');
+      ni?.addEventListener('input',()=>{ si.value=ni.value.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,''); });
+    },100);
+  },
+  edit(id) { this.openForm(S.cats.find(c=>c.id===id)||{}); },
+  async del(id) {
+    if (!confirm('Видалити категорію? Всі майстри, послуги та ціни будуть видалені!')) return;
+    await DB.del('categories',id); toast('Видалено');
+    await this.load();
+  }
+};
 
-      // ── Form helpers ────────────────────────────────────────────
-      function fval(id) {
-        const el = document.getElementById(id);
-        if (!el) return null;
-        if (el.type === "checkbox") return el.checked;
-        const v = el.value.trim();
-        return v === "" ? null : v;
-      }
-
-      function numOrNull(id) {
-        const v = fval(id);
-        return v === null ? null : Number(v);
-      }
-
-      // ── HTML escape ─────────────────────────────────────────────
-      function esc(s) {
-        if (s == null) return "";
-        return String(s)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      // ── Navigation ──────────────────────────────────────────────
-      const Nav = {
-        show(id) {
-          document
-            .querySelectorAll(".panel")
-            .forEach((p) => p.classList.remove("active"));
-          document
-            .querySelectorAll(".sb-link[data-panel]")
-            .forEach((l) => l.classList.remove("active"));
-          document.getElementById("panel-" + id)?.classList.add("active");
-          const link = document.querySelector(`.sb-link[data-panel="${id}"]`);
-          link?.classList.add("active");
-          document.getElementById("topbar-title").textContent =
-            link?.querySelector("span")?.textContent || "";
-          document.getElementById("sidebar").classList.remove("open");
-          P[id]?.load();
-        },
-      };
-
-      document.querySelectorAll(".sb-link[data-panel]").forEach((l) => {
-        l.addEventListener("click", () => Nav.show(l.dataset.panel));
-      });
-
-      document.getElementById("burger").addEventListener("click", () => {
-        document.getElementById("sidebar").classList.toggle("open");
-      });
-
-      // ── Edit / delete icon SVGs ──────────────────────────────────
-      const ICO_EDIT = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
-      const ICO_DEL = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
-
-      function actBtns(editFn, delFn) {
-        return `<div class="acts">
-    <button class="ico" onclick="${editFn}">${ICO_EDIT}</button>
-    <button class="ico d" onclick="${delFn}">${ICO_DEL}</button>
-  </div>`;
-      }
-
-      // ══════════════════════════════════════════════════════════════
-      // PANELS
-      // ══════════════════════════════════════════════════════════════
-      const P = {};
-
-      // ── CATEGORIES ─────────────────────────────────────────────
-      P.categories = {
-        rows: [],
-        async load() {
-          const tb = document.getElementById("tb-categories");
-          tb.innerHTML = `<tr><td colspan="4"><div class="loading"><div class="spin"></div></div></td></tr>`;
-          this.rows = await DB.get("categories");
-          tb.innerHTML = this.rows.length
-            ? this.rows
-                .map(
-                  (c) => `<tr>
-          <td><span class="pos">${c.position ?? ""}</span></td>
-          <td>${esc(c.name)}</td>
-          <td><code style="font-size:.75rem;color:var(--text-muted)">${esc(c.slug)}</code></td>
-          <td>${actBtns(`P.categories.edit(${c.id})`, `P.categories.del(${c.id})`)}</td>
-        </tr>`,
-                )
-                .join("")
-            : `<tr><td colspan="4"><div class="empty">Немає категорій</div></td></tr>`;
-        },
-        openForm(c = {}) {
-          const isEdit = !!c.id;
-          openModal(
-            isEdit ? "Редагувати категорію" : "Нова категорія",
-            `
-      <div class="fg"><label>Назва *</label><input id="f-name" value="${esc(c.name || "")}" placeholder="Перукар / Колорист"></div>
-      <div class="fg"><label>Slug *</label><input id="f-slug" value="${esc(c.slug || "")}" placeholder="hair"></div>
-      <div class="fg"><label>Опис</label><textarea id="f-desc" rows="2" placeholder="Короткий опис">${esc(c.description || "")}</textarea></div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${c.position ?? 0}" min="0"></div>
-    `,
-            async () => {
-              const row = {
-                name: fval("f-name"),
-                slug: fval("f-slug"),
-                description: fval("f-desc"),
-                position: numOrNull("f-pos"),
-              };
-              if (!row.name || !row.slug)
-                throw new Error("Заповніть назву та slug");
-              if (isEdit) await DB.update("categories", c.id, row);
-              else await DB.insert("categories", row);
-              toast(isEdit ? "Категорію оновлено ✓" : "Категорію створено ✓");
-              await this.load();
-            },
-          );
-          // Auto-slug
-          if (!isEdit) {
-            setTimeout(() => {
-              const ni = document.getElementById("f-name");
-              const si = document.getElementById("f-slug");
-              if (ni && si)
-                ni.addEventListener("input", () => {
-                  si.value = ni.value
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")
-                    .replace(/[^\w-]/g, "");
-                });
-            }, 100);
-          }
-        },
-        edit(id) {
-          this.openForm(this.rows.find((r) => r.id === id) || {});
-        },
-        async del(id) {
-          if (!confirm("Видалити категорію? Всі послуги теж будуть видалені!"))
-            return;
-          await DB.remove("categories", id);
-          toast("Видалено");
-          await this.load();
-        },
-      };
-
-      // ── SERVICES ────────────────────────────────────────────────
-      P.services = {
-        rows: [],
-        cats: [],
-        async load() {
-          const tb = document.getElementById("tb-services");
-          tb.innerHTML = `<tr><td colspan="4"><div class="loading"><div class="spin"></div></div></td></tr>`;
-          [this.rows, this.cats] = await Promise.all([
-            DB.get("services"),
-            DB.get("categories"),
-          ]);
-          // Fill filter
-          const sel = document.getElementById("svc-cat-filter");
-          sel.innerHTML =
-            `<option value="">Всі категорії</option>` +
-            this.cats
-              .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`)
-              .join("");
-          sel.onchange = () =>
-            this.render(
-              sel.value
-                ? this.rows.filter((s) => String(s.category_id) === sel.value)
-                : this.rows,
-            );
-          this.render(this.rows);
-        },
-        render(rows) {
-          const tb = document.getElementById("tb-services");
-          tb.innerHTML = rows.length
-            ? rows
-                .map((s) => {
-                  const cat = this.cats.find((c) => c.id === s.category_id);
-                  return `<tr class="${s.is_header ? "hdr-row" : ""}">
-        <td><span class="pos">${s.position ?? ""}</span></td>
-        <td>${esc(s.name)}${s.is_header ? ' <small style="opacity:.6">(заголовок)</small>' : ""}</td>
-        <td style="color:var(--gold-light);font-size:.8rem">${cat ? esc(cat.name) : "—"}</td>
-        <td>${actBtns(`P.services.edit(${s.id})`, `P.services.del(${s.id})`)}</td>
+// ── MASTERS ─────────────────────────────────────────────────
+P.masters = {
+  async load() {
+    [S.cats, S.masters] = await Promise.all([DB.get('categories'), DB.get('masters')]);
+    if (!activeMasterCat && S.cats.length) activeMasterCat = S.cats[0].id;
+    renderCatTabs('cat-tabs-masters', S.cats, activeMasterCat, id=>{ activeMasterCat=id; this.render(); });
+    this.render();
+  },
+  render() {
+    const tb = document.getElementById('tb-masters');
+    const rows = activeMasterCat ? S.masters.filter(m=>m.category_id===activeMasterCat) : S.masters;
+    if (!rows.length) { tb.innerHTML=`<tr><td colspan="6" class="tbl-empty">Немає майстрів</td></tr>`; return; }
+    tb.innerHTML = rows.map(m=>{
+      const cat = S.cats.find(c=>c.id===m.category_id);
+      return `<tr data-id="${m.id}">
+        <td><span class="drag-handle">${DRAG_ICO}</span></td>
+        <td>${avatarEl(m.avatar, m.name)}</td>
+        <td>${esc(m.name)}</td>
+        <td>${m.role==='Топ-майстер'?`<span class="badge badge-top">⭐ ${esc(m.role)}</span>`:`<span class="badge badge-master">${esc(m.role||'—')}</span>`}</td>
+        <td style="color:var(--text2);font-size:.8rem">${cat?esc(cat.name):'—'}</td>
+        <td><div class="acts">
+          <button class="icon-btn" onclick="P.masters.edit(${m.id})">${EDIT_ICO}</button>
+          <button class="icon-btn del" onclick="P.masters.del(${m.id})">${DEL_ICO}</button>
+        </div></td>
       </tr>`;
-                })
-                .join("")
-            : `<tr><td colspan="4"><div class="empty">Немає послуг</div></td></tr>`;
-        },
-        openForm(s = {}) {
-          const isEdit = !!s.id;
-          const catOpts = this.cats
-            .map(
-              (c) =>
-                `<option value="${c.id}" ${s.category_id === c.id ? "selected" : ""}>${esc(c.name)}</option>`,
-            )
-            .join("");
-          openModal(
-            isEdit ? "Редагувати послугу" : "Нова послуга",
-            `
+    }).join('');
+    initDrag(tb, async ids=>{ for(let i=0;i<ids.length;i++) await DB.upd('masters',ids[i],{position:i+1}); toast('Порядок збережено ✓'); });
+  },
+  openForm(m={}) {
+    const isEdit = !!m.id;
+    const catOpts = S.cats.map(c=>`<option value="${c.id}" ${m.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+    openModal(isEdit?'Редагувати майстра':'Новий майстер',`
       <div class="fg"><label>Категорія *</label><select id="f-cat"><option value="">— обрати —</option>${catOpts}</select></div>
-      <div class="fg"><label>Назва *</label><input id="f-name" value="${esc(s.name || "")}" placeholder="Стрижка"></div>
-      <div class="fg"><label class="fcheck"><input type="checkbox" id="f-hdr" ${s.is_header ? "checked" : ""}> Це заголовок-розділ (без ціни)</label></div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position ?? 0}" min="0"></div>
-    `,
-            async () => {
-              const row = {
-                category_id: numOrNull("f-cat"),
-                name: fval("f-name"),
-                is_header: document.getElementById("f-hdr").checked,
-                position: numOrNull("f-pos"),
-              };
-              if (!row.category_id || !row.name)
-                throw new Error("Заповніть категорію та назву");
-              if (isEdit) await DB.update("services", s.id, row);
-              else await DB.insert("services", row);
-              toast(isEdit ? "Послугу оновлено ✓" : "Послугу створено ✓");
-              await this.load();
-            },
-          );
-        },
-        edit(id) {
-          this.openForm(this.rows.find((r) => r.id === id) || {});
-        },
-        async del(id) {
-          if (!confirm("Видалити послугу?")) return;
-          await DB.remove("services", id);
-          toast("Видалено");
-          await this.load();
-        },
-      };
+      <div class="fg"><label>Ім'я *</label><input id="f-name" value="${esc(m.name||'')}"></div>
+      <div class="fg"><label>Роль</label>
+        <select id="f-role">
+          <option value="Майстер" ${m.role==='Майстер'?'selected':''}>Майстер</option>
+          <option value="Топ-майстер" ${m.role==='Топ-майстер'?'selected':''}>Топ-майстер</option>
+        </select>
+      </div>
+      <div class="fg"><label>Фото (шлях)</label><input id="f-avatar" value="${esc(m.avatar||'')}" placeholder="images/team/name.jpg"><small>Відносний шлях від кореня сайту</small></div>
+      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${m.position||0}" min="0"></div>
+    `, async()=>{
+      const row={category_id:fn('f-cat'),name:fv('f-name'),role:fv('f-role'),avatar:fv('f-avatar'),position:fn('f-pos')};
+      if (!row.category_id||!row.name) throw new Error('Заповніть категорію та ім\'я');
+      if (isEdit) await DB.upd('masters',m.id,row); else await DB.ins('masters',row);
+      toast(isEdit?'Збережено ✓':'Майстра додано ✓');
+      await this.load();
+    });
+  },
+  edit(id){ this.openForm(S.masters.find(m=>m.id===id)||{}); },
+  async del(id){
+    if (!confirm('Видалити майстра?')) return;
+    await DB.del('masters',id); toast('Видалено'); await this.load();
+  }
+};
 
-      // ── PRICES ──────────────────────────────────────────────────
-      P.prices = {
-        rows: [],
-        svcs: [],
-        masters: [],
-        async load() {
-          const tb = document.getElementById("tb-prices");
-          tb.innerHTML = `<tr><td colspan="4"><div class="loading"><div class="spin"></div></div></td></tr>`;
-          [this.rows, this.svcs, this.masters] = await Promise.all([
-            DB.get("prices"),
-            DB.get("services"),
-            DB.get("masters"),
-          ]);
-          this.svcs = this.svcs.filter((s) => !s.is_header);
-          tb.innerHTML = this.rows.length
-            ? this.rows
-                .map((p) => {
-                  const svc = this.svcs.find((s) => s.id === p.service_id);
-                  const master = this.masters.find((m) => m.id === p.master_id);
-                  const prStr =
-                    p.label ||
-                    (p.price_to
-                      ? `${p.price_from}–${p.price_to} ₴`
-                      : `${p.price_from} ₴`);
-                  return `<tr>
-        <td>${svc ? esc(svc.name) : "—"}</td>
-        <td>${master ? esc(master.name) : '<span style="opacity:.5">Всі</span>'}</td>
-        <td style="color:var(--gold)">${esc(prStr)}</td>
-        <td>${actBtns(`P.prices.edit(${p.id})`, `P.prices.del(${p.id})`)}</td>
+// ── SERVICES ────────────────────────────────────────────────
+P.services = {
+  async load(){
+    [S.cats, S.svcs] = await Promise.all([DB.get('categories'), DB.get('services')]);
+    if (!activeSvcCat && S.cats.length) activeSvcCat = S.cats[0].id;
+    renderCatTabs('cat-tabs-svcs', S.cats, activeSvcCat, id=>{ activeSvcCat=id; this.render(); });
+    this.render();
+  },
+  render(){
+    const tb = document.getElementById('tb-svcs');
+    const rows = activeSvcCat ? S.svcs.filter(s=>s.category_id===activeSvcCat) : S.svcs;
+    if (!rows.length){ tb.innerHTML=`<tr><td colspan="5" class="tbl-empty">Немає послуг</td></tr>`; return; }
+    tb.innerHTML = rows.map(s=>{
+      const cat=S.cats.find(c=>c.id===s.category_id);
+      return `<tr data-id="${s.id}">
+        <td><span class="drag-handle">${DRAG_ICO}</span></td>
+        <td><span class="pos-num">${s.position}</span></td>
+        <td>${esc(s.name)}</td>
+        <td style="color:var(--text2);font-size:.8rem">${cat?esc(cat.name):'—'}</td>
+        <td><div class="acts">
+          <button class="icon-btn" onclick="P.svcs.edit(${s.id})">${EDIT_ICO}</button>
+          <button class="icon-btn del" onclick="P.svcs.del(${s.id})">${DEL_ICO}</button>
+        </div></td>
       </tr>`;
-                })
-                .join("")
-            : `<tr><td colspan="4"><div class="empty">Немає цін</div></td></tr>`;
-        },
-        openForm(p = {}) {
-          const isEdit = !!p.id;
-          const svcOpts = this.svcs
-            .map(
-              (s) =>
-                `<option value="${s.id}" ${p.service_id === s.id ? "selected" : ""}>${esc(s.name)}</option>`,
-            )
-            .join("");
-          const mOpts = this.masters
-            .map(
-              (m) =>
-                `<option value="${m.id}" ${p.master_id === m.id ? "selected" : ""}>${esc(m.name)}</option>`,
-            )
-            .join("");
-          openModal(
-            isEdit ? "Редагувати ціну" : "Нова ціна",
-            `
-      <div class="fg"><label>Послуга *</label><select id="f-svc"><option value="">— обрати —</option>${svcOpts}</select></div>
-      <div class="fg"><label>Майстер</label><select id="f-master"><option value="">— всі майстри —</option>${mOpts}</select></div>
-      <div class="fg-row">
-        <div class="fg"><label>Ціна від (₴)</label><input id="f-pfrom" type="number" value="${p.price_from ?? ""}" min="0" placeholder="500"></div>
-        <div class="fg"><label>Ціна до (₴)</label><input id="f-pto" type="number" value="${p.price_to ?? ""}" min="0" placeholder="600"></div>
+    }).join('');
+    initDrag(tb, async ids=>{ for(let i=0;i<ids.length;i++) await DB.upd('services',ids[i],{position:i+1}); toast('Порядок збережено ✓'); await this.load(); });
+  },
+  openForm(s={}){
+    const isEdit=!!s.id;
+    const catOpts=S.cats.map(c=>`<option value="${c.id}" ${s.category_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+    openModal(isEdit?'Редагувати послугу':'Нова послуга',`
+      <div class="fg"><label>Категорія *</label><select id="f-cat"><option value="">— обрати —</option>${catOpts}</select></div>
+      <div class="fg"><label>Назва послуги *</label><input id="f-name" value="${esc(s.name||'')}"></div>
+      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position||0}" min="0"></div>
+    `, async()=>{
+      const row={category_id:fn('f-cat'),name:fv('f-name'),position:fn('f-pos')};
+      if (!row.category_id||!row.name) throw new Error('Заповніть категорію та назву');
+      if (isEdit) await DB.upd('services',s.id,row); else await DB.ins('services',row);
+      toast(isEdit?'Збережено ✓':'Послугу додано ✓');
+      await this.load();
+    });
+  },
+  edit(id){ this.openForm(S.svcs.find(s=>s.id===id)||{}); },
+  async del(id){
+    if (!confirm('Видалити послугу?')) return;
+    await DB.del('services',id); toast('Видалено'); await this.load();
+  }
+};
+P.svcs = P.services; // alias
+
+// ── PRICES ──────────────────────────────────────────────────
+P.prices = {
+  async load(){
+    [S.cats, S.masters, S.svcs, S.prices] = await Promise.all([
+      DB.get('categories'), DB.get('masters'), DB.get('services'), DB.get('prices')
+    ]);
+    if (!activePriceCat && S.cats.length) activePriceCat = S.cats[0].id;
+    renderCatTabs('cat-tabs-prices', S.cats, activePriceCat, id=>{ activePriceCat=id; this.render(); });
+    this.render();
+  },
+  render(){
+    const card = document.getElementById('price-card');
+    const catMasters = S.masters.filter(m=>m.category_id===activePriceCat);
+    const catSvcs    = S.svcs.filter(s=>s.category_id===activePriceCat);
+
+    if (!catSvcs.length){
+      card.innerHTML=`<div class="tbl-empty">Немає послуг у цій категорії</div>`; return;
+    }
+    if (!catMasters.length){
+      card.innerHTML=`<div class="tbl-empty">Немає майстрів у цій категорії</div>`; return;
+    }
+
+    // Header
+    let html = `<div style="overflow-x:auto"><table class="price-grid"><thead><tr><th>Послуга</th>`;
+    catMasters.forEach(m=>{
+      html+=`<th><div class="master-head">
+        ${m.avatar?`<img src="/${esc(m.avatar)}" class="master-ava" onerror="this.style.display='none'">`:`<div class="master-ava-ph">${esc(m.name[0])}</div>`}
+        <span style="font-size:.72rem;color:var(--text2)">${esc(m.name)}</span>
+        ${m.role==='Топ-майстер'?`<span class="badge badge-top" style="font-size:.6rem">Топ</span>`:''}
+      </div></th>`;
+    });
+    html+=`</tr></thead><tbody>`;
+
+    catSvcs.forEach(svc=>{
+      html+=`<tr><td>${esc(svc.name)}</td>`;
+      catMasters.forEach(m=>{
+        const p = S.prices.find(pr=>pr.service_id===svc.id && pr.master_id===m.id);
+        const val = p?.label || (p?.price_to ? `${p.price_from}–${p.price_to}` : p?.price_from ? `${p.price_from} ₴` : null);
+        html+=`<td class="price-cell">
+          <span class="${val?'price-val':'price-empty'}" 
+            onclick="P.prices.editCell(${svc.id},${m.id},'${esc(val||'')}','${esc(svc.name)}','${esc(m.name)}')">
+            ${val ? esc(val) : '+ додати'}
+          </span>
+        </td>`;
+      });
+      html+=`</tr>`;
+    });
+
+    html+=`</tbody></table></div>`;
+    card.innerHTML=html;
+  },
+  editCell(svcId, masterId, currentVal, svcName, masterName){
+    openModal(`Ціна: ${svcName}`,`
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1rem">Майстер: <strong style="color:var(--gold2)">${esc(masterName)}</strong></p>
+      <div class="fg"><label>Ціна (текст)</label>
+        <input id="f-price" value="${esc(currentVal)}" placeholder="500 ₴ або 500-600 ₴ або від 4800 ₴">
+        <small>Залиште порожнім — ціна буде видалена</small>
       </div>
-      <div class="fg"><label>Або текст (наприклад "від 4800 ₴")</label><input id="f-label" value="${esc(p.label || "")}" placeholder="від 4800 ₴"><small>Якщо заповнено — відображається замість чисел</small></div>
-    `,
-            async () => {
-              const row = {
-                service_id: numOrNull("f-svc"),
-                master_id: numOrNull("f-master"),
-                price_from: numOrNull("f-pfrom"),
-                price_to: numOrNull("f-pto"),
-                label: fval("f-label"),
-              };
-              if (!row.service_id) throw new Error("Оберіть послугу");
-              if (isEdit) await DB.update("prices", p.id, row);
-              else await DB.insert("prices", row);
-              toast(isEdit ? "Ціну оновлено ✓" : "Ціну додано ✓");
-              await this.load();
-            },
-          );
-        },
-        edit(id) {
-          this.openForm(this.rows.find((r) => r.id === id) || {});
-        },
-        async del(id) {
-          if (!confirm("Видалити цю ціну?")) return;
-          await DB.remove("prices", id);
-          toast("Видалено");
-          await this.load();
-        },
-      };
+    `, async()=>{
+      const val = fv('f-price');
+      if (val) { await DB.upsertPrice(svcId, masterId, val); toast('Ціну збережено ✓'); }
+      else { await DB.deletePrice(svcId, masterId); toast('Ціну видалено'); }
+      S.prices = await DB.get('prices');
+      this.render();
+    });
+    setTimeout(()=>{
+      const inp=document.getElementById('f-price');
+      if(inp){ inp.focus(); inp.select(); }
+    },130);
+  }
+};
 
-      // ── MASTERS ─────────────────────────────────────────────────
-      P.masters = {
-        rows: [],
-        async load() {
-          const tb = document.getElementById("tb-masters");
-          tb.innerHTML = `<tr><td colspan="4"><div class="loading"><div class="spin"></div></div></td></tr>`;
-          this.rows = await DB.get("masters");
-          tb.innerHTML = this.rows.length
-            ? this.rows
-                .map(
-                  (m) => `<tr>
-      <td>${
-        m.avatar
-          ? `<img src="/${esc(m.avatar)}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--border)">`
-          : `<div style="width:34px;height:34px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:600">${esc(m.name[0])}</div>`
-      }
-      </td>
-      <td>${esc(m.name)}</td>
-      <td style="color:var(--text-muted)">${esc(m.role || "")}</td>
-      <td>${actBtns(`P.masters.edit(${m.id})`, `P.masters.del(${m.id})`)}</td>
-    </tr>`,
-                )
-                .join("")
-            : `<tr><td colspan="4"><div class="empty">Немає майстрів</div></td></tr>`;
-        },
-        openForm(m = {}) {
-          const isEdit = !!m.id;
-          openModal(
-            isEdit ? "Редагувати майстра" : "Новий майстер",
-            `
-      <div class="fg"><label>Ім'я *</label><input id="f-name" value="${esc(m.name || "")}" placeholder="Ім'я майстра"></div>
-      <div class="fg"><label>Роль</label><input id="f-role" value="${esc(m.role || "")}" placeholder="Топ-майстер"></div>
-      <div class="fg"><label>Шлях до фото</label><input id="f-avatar" value="${esc(m.avatar || "")}" placeholder="images/team/name.jpg"><small>Відносний шлях від кореня сайту</small></div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${m.position ?? 0}" min="0"></div>
-    `,
-            async () => {
-              const row = {
-                name: fval("f-name"),
-                role: fval("f-role"),
-                avatar: fval("f-avatar"),
-                position: numOrNull("f-pos"),
-              };
-              if (!row.name) throw new Error("Введіть ім'я");
-              if (isEdit) await DB.update("masters", m.id, row);
-              else await DB.insert("masters", row);
-              toast(isEdit ? "Майстра оновлено ✓" : "Майстра додано ✓");
-              await this.load();
-            },
-          );
-        },
-        edit(id) {
-          this.openForm(this.rows.find((r) => r.id === id) || {});
-        },
-        async del(id) {
-          if (!confirm("Видалити майстра?")) return;
-          await DB.remove("masters", id);
-          toast("Видалено");
-          await this.load();
-        },
-      };
-
-      // ── SCHEDULE ────────────────────────────────────────────────
-      P.schedule = {
-        rows: [],
-        async load() {
-          const tb = document.getElementById("tb-schedule");
-          tb.innerHTML = `<tr><td colspan="4"><div class="loading"><div class="spin"></div></div></td></tr>`;
-          this.rows = await DB.get("schedule");
-          tb.innerHTML = this.rows.length
-            ? this.rows
-                .map(
-                  (s) => `<tr>
-      <td>${esc(s.day_label)}</td>
-      <td style="color:var(--gold)">${(s.open_time || "").slice(0, 5)}</td>
-      <td style="color:var(--gold)">${(s.close_time || "").slice(0, 5)}</td>
-      <td>${actBtns(`P.schedule.edit(${s.id})`, `P.schedule.del(${s.id})`)}</td>
-    </tr>`,
-                )
-                .join("")
-            : `<tr><td colspan="4"><div class="empty">Немає графіка</div></td></tr>`;
-        },
-        openForm(s = {}) {
-          const isEdit = !!s.id;
-          openModal(
-            isEdit ? "Редагувати графік" : "Новий рядок графіка",
-            `
-      <div class="fg"><label>Дні *</label><input id="f-day" value="${esc(s.day_label || "")}" placeholder="Понеділок – П'ятниця"></div>
-      <div class="fg-row">
-        <div class="fg"><label>Відкриття *</label><input id="f-open" type="time" value="${s.open_time || "08:00"}"></div>
-        <div class="fg"><label>Закриття *</label><input id="f-close" type="time" value="${s.close_time || "20:00"}"></div>
+// ── SCHEDULE ────────────────────────────────────────────────
+P.schedule = {
+  async load(){
+    S.sched = await DB.get('schedule');
+    this.render();
+  },
+  render(){
+    const card=document.getElementById('sched-card');
+    if (!S.sched.length){ card.innerHTML=`<div class="tbl-empty">Немає записів</div>`; return; }
+    card.innerHTML = S.sched.map(s=>`
+      <div class="schedule-row">
+        <span class="schedule-day">${esc(s.day_label)}</span>
+        <span class="schedule-time">${(s.open_time||'').slice(0,5)}</span>
+        <span style="color:var(--text3)">—</span>
+        <span class="schedule-time">${(s.close_time||'').slice(0,5)}</span>
+        <div class="acts">
+          <button class="icon-btn" onclick="P.sched.edit(${s.id})">${EDIT_ICO}</button>
+          <button class="icon-btn del" onclick="P.sched.del(${s.id})">${DEL_ICO}</button>
+        </div>
+      </div>`).join('');
+  },
+  openForm(s={}){
+    const isEdit=!!s.id;
+    openModal(isEdit?'Редагувати графік':'Новий рядок',`
+      <div class="fg"><label>Дні *</label><input id="f-day" value="${esc(s.day_label||'')}" placeholder="Понеділок – П'ятниця"></div>
+      <div class="fg2">
+        <div class="fg"><label>Відкриття *</label><input id="f-open" type="time" value="${s.open_time||'08:00'}"></div>
+        <div class="fg"><label>Закриття *</label><input id="f-close" type="time" value="${s.close_time||'20:00'}"></div>
       </div>
-      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position ?? 0}" min="0"></div>
-    `,
-            async () => {
-              const row = {
-                day_label: fval("f-day"),
-                open_time: fval("f-open"),
-                close_time: fval("f-close"),
-                position: numOrNull("f-pos"),
-              };
-              if (!row.day_label || !row.open_time || !row.close_time)
-                throw new Error("Заповніть всі поля");
-              if (isEdit) await DB.update("schedule", s.id, row);
-              else await DB.insert("schedule", row);
-              toast(isEdit ? "Графік оновлено ✓" : "Запис додано ✓");
-              await this.load();
-            },
-          );
-        },
-        edit(id) {
-          this.openForm(this.rows.find((r) => r.id === id) || {});
-        },
-        async del(id) {
-          if (!confirm("Видалити цей рядок?")) return;
-          await DB.remove("schedule", id);
-          toast("Видалено");
-          await this.load();
-        },
-      };
+      <div class="fg"><label>Позиція</label><input id="f-pos" type="number" value="${s.position||0}" min="0"></div>
+    `, async()=>{
+      const row={day_label:fv('f-day'),open_time:fv('f-open'),close_time:fv('f-close'),position:fn('f-pos')};
+      if (!row.day_label||!row.open_time||!row.close_time) throw new Error('Заповніть всі поля');
+      if (isEdit) await DB.upd('schedule',s.id,row); else await DB.ins('schedule',row);
+      toast(isEdit?'Збережено ✓':'Додано ✓');
+      await this.load();
+    });
+  },
+  edit(id){ this.openForm(S.sched.find(r=>r.id===id)||{}); },
+  async del(id){
+    if (!confirm('Видалити цей рядок?')) return;
+    await DB.del('schedule',id); toast('Видалено'); await this.load();
+  }
+};
+P.sched = P.schedule;
 
-      // ── Export ───────────────────────────────────────────────────
-      document
-        .getElementById("export-btn")
-        .addEventListener("click", async () => {
-          toast("Завантаження даних...");
-          const [categories, services, prices, masters, schedule] =
-            await Promise.all([
-              DB.get("categories"),
-              DB.get("services"),
-              DB.get("prices"),
-              DB.get("masters"),
-              DB.get("schedule"),
-            ]);
-          const json = JSON.stringify(
-            {
-              exported_at: new Date().toISOString(),
-              categories,
-              services,
-              prices,
-              masters,
-              schedule,
-            },
-            null,
-            2,
-          );
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(
-            new Blob([json], { type: "application/json" }),
-          );
-          a.download = `milan_data_${new Date().toISOString().slice(0, 10)}.json`;
-          a.click();
-          toast("JSON завантажено ✓");
-        });
+// ── Export ───────────────────────────────────────────────────
+document.getElementById('export-btn').addEventListener('click', async()=>{
+  toast('Завантаження...');
+  const [categories, masters, services, prices, schedule] = await Promise.all([
+    DB.get('categories'), DB.get('masters'), DB.get('services'),
+    DB.get('prices'), DB.get('schedule'),
+  ]);
+  const json = JSON.stringify({ exported_at:new Date().toISOString(), categories, masters, services, prices, schedule }, null, 2);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json],{type:'application/json'}));
+  a.download = `milan_data_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); toast('JSON завантажено ✓');
+});
 
-      // ── Init ─────────────────────────────────────────────────────
-      Nav.show("categories");
-    </script>
-  </body>
+// ── Init ─────────────────────────────────────────────────────
+showPanel('categories');
+</script>
+</body>
 </html>
