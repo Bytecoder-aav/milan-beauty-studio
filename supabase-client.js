@@ -1,5 +1,5 @@
 // ============================================================
-// supabase-client.js  v5
+// supabase-client.js  v6
 // Підключити в index.html (сайту) ПЕРЕД script.js:
 //   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 //   <script src="supabase-client.js"></script>
@@ -19,12 +19,12 @@ const CAT_ICONS = {
   massage:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2.5"/><path d="M4 18c0-2 2-3 5-3s5 1 5 3v2H4v-2z"/><circle cx="18" cy="5" r="2.5" opacity="0.8"/></svg>`,
 };
 
-// ── Supabase client (ініціалізується один раз) ────────────────
+// ── Supabase client ───────────────────────────────────────────
 let _sb = null;
 function getSb() {
   if (!_sb) {
     if (typeof supabase === 'undefined') {
-      console.error('[Milan] supabase SDK не завантажено! Додай тег <script> з CDN перед supabase-client.js');
+      console.error('[Milan] supabase SDK не завантажено!');
       return null;
     }
     _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -36,11 +36,12 @@ function getSb() {
 async function sbGet(table) {
   const sb = getSb();
   if (!sb) return [];
-  const { data, error } = await sb
-    .from(table)
-    .select('*')
-    .order('position', { ascending: true, nullsFirst: false })
-    .order('id', { ascending: true });
+  // Таблиця prices не має колонки position
+  const hasPosition = table !== 'prices';
+  let q = sb.from(table).select('*');
+  if (hasPosition) q = q.order('position', { ascending: true, nullsFirst: false });
+  q = q.order('id', { ascending: true });
+  const { data, error } = await q;
   if (error) {
     console.warn(`[Milan] sbGet(${table}):`, error.message);
     return [];
@@ -52,20 +53,20 @@ async function sbGet(table) {
 function getAvatarUrl(avatar) {
   if (!avatar) return null;
   if (avatar.startsWith('http')) return avatar;
-  // Новий формат: "masters/filename.jpg" → Storage URL
   if (!avatar.startsWith('images/')) {
     return `${SUPABASE_URL}/storage/v1/object/public/avatars/${avatar}`;
   }
-  // Старий відносний шлях (сумісність)
   return `/${avatar}`;
 }
 
-// ── Render services grid ─────────────────────────────────────
+// ── Render services grid (тільки якщо є дані) ────────────────
 function renderServices(categories) {
   const grid = document.querySelector('.services-grid');
   if (!grid) return;
-  if (!categories.length) {
-    console.warn('[Milan] Категорії порожні — картки не відображаються');
+
+  // ВАЖЛИВО: не чіпаємо grid якщо категорій немає — залишаємо статичний HTML
+  if (!categories || !categories.length) {
+    console.warn('[Milan] Категорії порожні — залишаємо статичний HTML');
     return;
   }
 
@@ -79,17 +80,22 @@ function renderServices(categories) {
     </article>
   `).join('');
 
-  // Scroll animation
+  // Перепідключаємо scroll observer
   if (window._scrollObserver) {
     grid.querySelectorAll('.animate-on-scroll').forEach(el => window._scrollObserver.observe(el));
   }
 
-  // Click → price modal
-  grid.querySelectorAll('.service-card').forEach(card => {
-    card.addEventListener('click', () => {
+  // Клік → price modal (script.js вже завантажений)
+  rebindServiceCards();
+}
+
+// ── Перепідключити кліки на картки ───────────────────────────
+function rebindServiceCards() {
+  document.querySelectorAll('.service-card').forEach(card => {
+    card.onclick = () => {
       const key = card.getAttribute('data-service');
       if (key && typeof openPriceModal === 'function') openPriceModal(key);
-    });
+    };
   });
 }
 
@@ -179,7 +185,7 @@ function subscribeRealtime(sbClient) {
 // ── Main ─────────────────────────────────────────────────────
 async function initSupabase() {
   const sbClient = getSb();
-  if (!sbClient) return; // SDK не завантажено
+  if (!sbClient) return;
 
   try {
     const [categories, masters, services, prices, schedule] = await Promise.all([
@@ -190,13 +196,18 @@ async function initSupabase() {
       sbGet('schedule'),
     ]);
 
-    console.log(`[Milan] Завантажено: ${categories.length} категорій, ${masters.length} майстрів`);
+    console.log(`[Milan] Завантажено: ${categories.length} категорій, ${masters.length} майстрів, ${services.length} послуг`);
 
+    // Будуємо servicesData для price modal
     window.servicesData = buildServicesData(categories, masters, services, prices);
+
+    // Оновлюємо grid тільки якщо є категорії
     renderServices(categories);
+
+    // Графік роботи
     if (schedule.length) renderSchedule(schedule);
 
-    // Підключаємо realtime
+    // Підключаємо realtime для автооновлення
     subscribeRealtime(sbClient);
 
   } catch (err) {
@@ -204,4 +215,5 @@ async function initSupabase() {
   }
 }
 
+// Запускаємо після завантаження сторінки
 document.addEventListener('DOMContentLoaded', initSupabase);
