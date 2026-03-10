@@ -261,7 +261,7 @@
               <img src="${m.photo || 'images/founder.jpg'}" alt="${m.name}" class="master-photo"
                 onerror="this.style.display='none';this.parentElement.style.background='rgba(201,169,98,.2)'">
             </div>
-            <span class="price-badge">${m.name}${isTop ? '<span class="top-star">★</span>' : ''}</span>
+            <span class="price-badge">${m.name}</span>
           </div>
         </th>`;
     });
