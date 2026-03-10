@@ -36,12 +36,12 @@
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+        observer.unobserve(entry.target); // зупиняємо спостереження після появи
       }
     });
   }, observerOptions);
 
-  window._scrollObserver = observer; // доступний для supabase-client.js
+  window._scrollObserver = observer;
   document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
 
   // ----- Header scroll state -----
@@ -106,9 +106,9 @@
   }
 
   // ----- Services Price Data -----
-  // servicesData глобальна — supabase-client.js може її перезаписати
-  if (!window.servicesData || !Object.keys(window.servicesData).length) window.servicesData = {
-    hair: {
+  // servicesData global — supabase-client.js може перезаписати
+  if (!window.servicesData) window.servicesData = {
+    hair1: {
       title: 'Перукар/Колорист',
       masters: [
         { name: 'Лена', role: 'Майстер', photo: 'images/team/lena.jpg' },   
@@ -133,7 +133,7 @@
         { name: 'Аїртач', master: 'від 7000 ₴' }
       ]
     },
-    colorist: {
+    hair2: {
       title: 'Перукар/Колорист',
       masters: [
         { name: 'Альона', role: 'Майстер', photo: 'images/team/alona.jpg' },
@@ -228,7 +228,6 @@
       ]
     }
   };
-
   const servicesData = window.servicesData;
 
   // ----- Price Modal Logic -----
@@ -240,20 +239,18 @@
   const modalTableHead = priceModal?.querySelector('thead tr');
 
   window.openPriceModal = function openPriceModal(serviceKey) {
-    // Спочатку шукаємо в window.servicesData (з Supabase), потім у локальній
-    const source = (window.servicesData && window.servicesData[serviceKey])
+    // Завжди беремо актуальні дані — спочатку з window (Supabase), потім локальні
+    const src = (window.servicesData && window.servicesData[serviceKey])
       ? window.servicesData : servicesData;
-    const data = source[serviceKey];
+    const data = src[serviceKey];
     if (!data || !priceModal || !modalBody || !modalTableHead) return;
 
     modalTitle.textContent = data.title;
     modalBody.innerHTML = '';
 
-    // Підтримуємо будь-яку кількість майстрів
-    // Якщо masters прийшли з Supabase — показуємо кожного окремою колонкою
     const masters = data.masters || [];
 
-    // Будуємо заголовок — одна колонка на майстра
+    // Будуємо заголовок — колонка на кожного майстра
     let headHtml = `<th class="price-header-name">Послуги</th>`;
     masters.forEach(m => {
       const isTop = m.role === 'Топ-майстер';
@@ -262,50 +259,35 @@
           <div class="master-badge-item">
             <div class="master-photo-circle">
               <img src="${m.photo || 'images/founder.jpg'}" alt="${m.name}" class="master-photo"
-                onerror="this.src='images/founder.jpg'">
+                onerror="this.style.display='none';this.parentElement.style.background='rgba(201,169,98,.2)'">
             </div>
-            <span class="price-badge">${m.name}${isTop ? ' <span style="font-size:.7em;opacity:.7">★</span>' : ''}</span>
+            <span class="price-badge">${m.name}${isTop ? '<span class="top-star">★</span>' : ''}</span>
           </div>
         </th>`;
     });
     modalTableHead.innerHTML = headHtml;
 
-    // single-column клас для стилів
-    if (masters.length <= 1) {
-      priceModal.classList.add('single-column');
-    } else {
-      priceModal.classList.remove('single-column');
-    }
+    priceModal.classList.toggle('single-column', masters.length <= 1);
 
-    // Будуємо рядки — визначаємо ціну для кожного майстра по індексу або ролі
+    // Рядки таблиці
     data.prices.forEach(item => {
       const row = document.createElement('tr');
-
       if (item.isHeader) {
         row.className = 'price-section-row';
         row.innerHTML = `<td colspan="${masters.length + 1}" class="price-section-title">${item.name || ''}</td>`;
       } else {
         row.className = 'price-row';
         let html = `<td class="price-name">${item.name}</td>`;
-
         masters.forEach(m => {
           const isTop = m.role === 'Топ-майстер';
-          // Якщо є конкретна ціна по імені майстра — використовуємо її
-          // Інакше — master для звичайних, top для топ-майстрів
-          let val = '-';
-          if (item[m.name] !== undefined) {
-            val = item[m.name] || '-';
-          } else if (isTop && item.top) {
-            val = item.top;
-          } else if (!isTop && item.master) {
-            val = item.master;
-          }
+          // Пріоритет: по імені майстра > по ролі
+          let val = item[m.name] !== undefined ? item[m.name]
+                  : isTop ? (item.top || '-')
+                  : (item.master || '-');
           html += `<td class="price-val">${val}</td>`;
         });
-
         row.innerHTML = html;
       }
-
       modalBody.appendChild(row);
     });
 
@@ -328,7 +310,7 @@
   document.querySelectorAll('.service-card').forEach(card => {
     card.addEventListener('click', () => {
       const serviceKey = card.getAttribute('data-service');
-      if (serviceKey) openPriceModal(serviceKey);
+      if (serviceKey && typeof window.openPriceModal === 'function') window.openPriceModal(serviceKey);
     });
   });
 
