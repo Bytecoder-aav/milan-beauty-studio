@@ -759,4 +759,50 @@
       }
     });
   });
+
+  // ── Hero video — мобільний менеджер ─────────────────────────
+  (function() {
+    const video = document.getElementById('hero-video');
+    if (!video) return;
+
+    function tryPlay() {
+      const p = video.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          // autoplay заблоковано — poster видно, чекаємо тач
+          video.style.opacity = '0';
+          document.addEventListener('touchstart', function onTouch() {
+            video.play().then(() => {
+              video.style.transition = 'opacity 0.8s ease';
+              video.style.opacity = '0.25';
+            }).catch(() => {});
+            document.removeEventListener('touchstart', onTouch);
+          }, { once: true });
+        });
+      }
+    }
+
+    // Плавна поява після першого кадру
+    video.addEventListener('loadeddata', function() {
+      video.style.transition = 'opacity 0.8s ease';
+      video.style.opacity = '0.25';
+    }, { once: true });
+
+    // До завантаження ховаємо відео — poster видно
+    if (video.readyState < 2) video.style.opacity = '0';
+
+    // iOS потребує явного play()
+    if (document.readyState === 'complete') {
+      tryPlay();
+    } else {
+      window.addEventListener('load', tryPlay, { once: true });
+    }
+
+    // Пауза коли вкладка неактивна
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) { video.pause(); }
+      else { video.play().catch(() => {}); }
+    });
+  })();
+
 })();
