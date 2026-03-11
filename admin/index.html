@@ -2103,7 +2103,7 @@
         </select>
       </div>
       <p style="font-size:.75rem;color:var(--t3);margin-top:.25rem">
-        Майстер буде переміщений до цієї категорії (category_id зміниться).
+        Майстер буде скопійований — залишиться і в своїй категорії, і з'явиться тут.
       </p>
     </div>
     <div id="tab-new-panel">`
@@ -2151,8 +2151,17 @@
               // Прив'язуємо існуючого майстра до поточної категорії
               const existId = fn("f-exist-master");
               if (!existId) throw new Error("Оберіть майстра зі списку");
-              await DB.upd("masters", existId, { category_id: catId });
-              toast("Майстра прив'язано до категорії ✓");
+              // Копіюємо майстра — оригінал залишається в своїй категорії
+              const src = S.masters.find((mx) => mx.id === existId);
+              if (!src) throw new Error("Майстра не знайдено");
+              await DB.ins("masters", {
+                category_id: catId,
+                name: src.name,
+                role: src.role,
+                avatar: src.avatar,
+                position: src.position,
+              });
+              toast("Майстра скопійовано до категорії ✓");
               S.masters = await DB.all("masters");
               S.prices = await DB.all("prices");
               if (activeCatId) {
