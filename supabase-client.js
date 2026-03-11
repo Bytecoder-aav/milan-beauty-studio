@@ -73,7 +73,7 @@ function renderServices(categories) {
     // Якщо картки немає в HTML — створюємо нову
     if (!card && grid) {
       card = document.createElement('article');
-      card.className = 'service-card animate-on-scroll visible';
+      card.className = 'service-card animate-on-scroll'; // без visible — щоб анімація спрацювала
       card.setAttribute('data-service', cat.slug);
       card.setAttribute('data-delay', String(idx));
       card.innerHTML = `
@@ -84,6 +84,11 @@ function renderServices(categories) {
         if (typeof window.openPriceModal === 'function') window.openPriceModal(cat.slug);
       });
       grid.appendChild(card);
+      // Даємо браузеру 1 кадр щоб застосувати початковий стан (opacity:0, translateY),
+      // потім додаємо visible — CSS transition плавно покаже картку
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => card.classList.add('visible'));
+      });
       return;
     }
 
@@ -141,7 +146,7 @@ function buildServicesData(categories, masters, services, prices) {
           const p = prices.find(pr => pr.service_id === svc.id && pr.master_id === m.id);
           if (!p) return;
           const val = p.label || (p.price_to ? `${p.price_from}–${p.price_to} ₴` : `${p.price_from} ₴`);
-          if (m.role === 'Майстер2') row.top = val; else row.master = val;
+          if (m.role === 'Топ-майстер' || m.role === 'Майстер2') row.top = val; else row.master = val;
           row[m.name] = val; // точне співставлення по імені
         });
       }
@@ -152,7 +157,7 @@ function buildServicesData(categories, masters, services, prices) {
       title:   cat.name,
       masters: catMasters.map(m => ({
         name:  m.name,
-        role:  m.role || 'Майстер1',
+        role:  m.role || 'Майстер',
         photo: getAvatarUrl(m.avatar) || '',
       })),
       prices: priceRows,

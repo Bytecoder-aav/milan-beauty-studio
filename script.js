@@ -125,7 +125,7 @@
     hair1: {
       title: 'Перукар/Колорист',
       masters: [
-        { name: 'Лена', role: 'Майстер1', photo: 'images/team/lena.jpg' },   
+        { name: 'Лена', role: 'Майстер', photo: 'images/team/lena.jpg' },   
       ],
       prices: [
         { name: 'Стрижка', isHeader: true },
@@ -150,8 +150,8 @@
     hair2: {
       title: 'Перукар/Колорист',
       masters: [
-        { name: 'Альона', role: 'Майстер1', photo: 'images/team/alona.jpg' },
-        { name: 'Віта', role: 'Майстер2', photo: 'images/team/vita.jpg' }
+        { name: 'Альона', role: 'Майстер', photo: 'images/team/alona.jpg' },
+        { name: 'Віта', role: 'Топ-майстер', photo: 'images/team/vita.jpg' }
       ],
       prices: [
         { name: 'Стрижка', isHeader: true },
@@ -176,7 +176,7 @@
     permanent: {
       title: 'Перманент / Ремувер',
       masters: [
-        { name: 'Олеся', role: 'Майстер2', photo: 'images/team/olesya.jpg' }
+        { name: 'Олеся', role: 'Топ-майстер', photo: 'images/team/olesya.jpg' }
       ],
       prices: [
         { name: 'Перманент', isHeader: true },
@@ -195,8 +195,8 @@
     nails: {
       title: 'Нігтьовий сервіс',
       masters: [
-        { name: 'Аліна Дорошенко', role: 'Майстер1', photo: 'images/team/alinad.jpg' },
-        { name: 'Аліна', role: 'Майстер2', photo: 'images/team/alina.jpg' }
+        { name: 'Аліна Дорошенко', role: 'Майстер', photo: 'images/team/alinad.jpg' },
+        { name: 'Аліна', role: 'Топ-майстер', photo: 'images/team/alina.jpg' }
       ],
       prices: [
         { name: 'Комплекс (зняття, манікюр, покриття)', master: '500', top: '550' },
@@ -210,7 +210,7 @@
     brows: {
       title: 'Бровіст / Ламімейкер',
       masters: [
-        { name: 'Віта', role: 'Майстер1', photo: 'images/team/vita.jpg' },
+        { name: 'Віта', role: 'Майстер', photo: 'images/team/vita.jpg' },
       ],
       prices: [
         { name: 'Ламінування вій', master: '650 ₴' },
@@ -224,7 +224,7 @@
     massage: {
       title: 'Масажист',
       masters: [
-        { name: 'Ольга', role: 'Майстер1', photo: 'images/team/olga.jpg' }
+        { name: 'Ольга', role: 'Майстер', photo: 'images/team/olga.jpg' }
       ],
       prices: [
         { name: 'Масаж', isHeader: true },
@@ -267,7 +267,7 @@
     // Будуємо заголовок — колонка на кожного майстра
     let headHtml = `<th class="price-header-name">Послуги</th>`;
     masters.forEach(m => {
-      const isTop = m.role === 'Майстер2';
+      const isTop = m.role === 'Топ-майстер' || m.role === 'Майстер2';
       headHtml += `
         <th class="price-header-val ${isTop ? 'badge-top-master' : 'badge-master'}">
           <div class="master-badge-item">
@@ -293,11 +293,11 @@
         row.className = 'price-row';
         let html = `<td class="price-name">${item.name}</td>`;
         masters.forEach(m => {
-          const isTop = m.role === 'Майстер2';
+          const isTop = m.role === 'Топ-майстер' || m.role === 'Майстер2';
           // Пріоритет: по імені майстра > по ролі
           let val = item[m.name] !== undefined ? item[m.name]
-                  : isTop ? (item.top || item.master || '-')
-                  : (item.master || item.top || '-');
+                  : isTop ? (item.top || '-')
+                  : (item.master || '-');
           html += `<td class="price-val">${val}</td>`;
         });
         row.innerHTML = html;
